@@ -48,8 +48,8 @@ public class LocalMicAdapter extends BaseAdapter {
             viewHolder.mArtist = view.findViewById(R.id.tv_localmusic_artist);
             viewHolder.mTitle = view.findViewById(R.id.tv_localmusic_title);
             view.setTag(viewHolder);
-            return view;
         } else {
+            view=convertView;
             viewHolder = (ViewHolder) view.getTag();
         }
 
@@ -58,7 +58,7 @@ public class LocalMicAdapter extends BaseAdapter {
             viewHolder.mArtist.setText(model.getmArtist());
         }
 
-        return convertView;
+        return view;
     }
 
     class ViewHolder {
