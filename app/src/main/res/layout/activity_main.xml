@@ -4,14 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".activity.MainActivity">
 
     <include layout="@layout/activity_main_head" />
     <include layout="@layout/activity_main_secondmenu_head"/>
 
     <include
         android:id="@+id/ll_mine"
-        layout="@layout/activity_main_mine_layout" />
+        layout="@layout/scrollview_main_mine_layout" />
 
     <include
         android:id="@+id/ll_bottom_playing_song"

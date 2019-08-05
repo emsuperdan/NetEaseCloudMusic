@@ -1,6 +1,6 @@
 package com.example.tangdan.cloudmusic.present;
 
-import com.example.tangdan.cloudmusic.BaseActivity;
+import com.example.tangdan.cloudmusic.activity.BaseActivity;
 import com.example.tangdan.cloudmusic.callback.ICallBack;
 import com.example.tangdan.cloudmusic.model.BaseModel;
 

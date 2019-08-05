@@ -1,7 +1,9 @@
-package com.example.tangdan.cloudmusic;
+package com.example.tangdan.cloudmusic.activity;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+
+import com.example.tangdan.cloudmusic.IView;
 
 public class BaseActivity extends AppCompatActivity implements IView {
 
