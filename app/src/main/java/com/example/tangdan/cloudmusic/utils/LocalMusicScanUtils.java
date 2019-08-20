@@ -16,9 +16,10 @@ public class LocalMusicScanUtils {
         Cursor cursor = contentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null,
                 MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
         List<MusicModel> data = new ArrayList<>();
-        MusicModel model = new MusicModel();
+        MusicModel model;
         if (cursor != null && cursor.moveToFirst()) {
             for (int i = 0; i < cursor.getCount(); i++) {
+                model = new MusicModel();
                 String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
                 String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
                 long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
@@ -29,7 +30,7 @@ public class LocalMusicScanUtils {
                 String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
                 int ismusic = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.IS_MUSIC));
 
-                if (ismusic != 0 && duration >= (500 * 60)) {
+                if (ismusic != 0 && duration > 60120) {
                     model.setmTitle(title);
                     model.setmArtist(artist);
                     model.setmAlbum(album);
@@ -40,8 +41,10 @@ public class LocalMusicScanUtils {
                     model.setmUrl(url);
                     data.add(model);
                 }
+                cursor.moveToNext();
             }
         }
+        cursor.close();
         return data;
     }
 }
