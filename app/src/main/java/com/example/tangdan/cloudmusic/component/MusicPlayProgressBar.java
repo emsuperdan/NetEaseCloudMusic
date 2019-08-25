@@ -22,10 +22,14 @@ import com.example.tangdan.cloudmusic.R;
 的什么setClick,setprogress等方法;
  */
 public class MusicPlayProgressBar extends View {
+    private ProgressBarListener listener;
     private Context mContext;
     Paint mPaint;
     Paint mThumbPaint;
+    private float X;
     float mProgress;
+    int progressWidth;
+    int progressHeight;
 
     public MusicPlayProgressBar(Context context) {
         this(context, null);
@@ -65,8 +69,9 @@ public class MusicPlayProgressBar extends View {
         mThumbPaint.setColor(mContext.getResources().getColor(R.color.white));
     }
 
-    int progressWidth;
-    int progressHeight;
+    public void setProgressBarListener(ProgressBarListener listener){
+        this.listener=listener;
+    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -81,22 +86,35 @@ public class MusicPlayProgressBar extends View {
         canvas.drawRect(0, (float) (progressHeight / 2 - 3.5), progressWidth,
                 (float) (progressHeight / 2 + 3.5), mPaint);
 
-        Log.d("AAA","(float) (7.5 + getProgress() * 20"+(float) (7.5 + getProgress() * 200));
         canvas.drawCircle((float) (7.5 + getProgress() * 200), progressHeight / 2,
                 (float) 7.5, mThumbPaint);
     }
 
-    private boolean flag = false;
-    private float X;
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()){
+        switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                X=event.getX();
+                X = event.getX();
+                Log.d("TAG")
+                break;
+            case MotionEvent.ACTION_UP:
+                float newX = event.getX();
+                if (newX > 400) {
+                    newX = 400;
+                }
+                if (newX < 0) {
+                    newX = 0;
+                }
+                float pos = (newX - X) / progressWidth;
+                setProgress(pos);
+                listener.jumpPosToPlay(pos);
                 break;
         }
         return true;
+    }
+
+    public interface ProgressBarListener{
+        void jumpPosToPlay(float pos);
     }
 
     public float getProgress() {
