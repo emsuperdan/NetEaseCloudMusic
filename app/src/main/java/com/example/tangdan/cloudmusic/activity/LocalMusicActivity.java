@@ -1,7 +1,10 @@
 package com.example.tangdan.cloudmusic.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 
@@ -13,7 +16,7 @@ import com.example.tangdan.cloudmusic.utils.LocalMusicScanUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LocalMusicActivity extends BaseActivity {
+public class LocalMusicActivity extends BaseActivity implements AdapterView.OnItemClickListener {
     private ListView mListView;
     private LocalMicAdapter mAdapter;
     private List<MusicModel> mList;
@@ -28,6 +31,8 @@ public class LocalMusicActivity extends BaseActivity {
 
         initView();
         initData();
+
+        mListView.setOnItemClickListener(this);
     }
 
     private void initData() {
@@ -48,4 +53,15 @@ public class LocalMusicActivity extends BaseActivity {
         mIndicatorViewList.get(0).setVisibility(View.VISIBLE);
     }
 
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        MusicModel model = mList.get(position);
+        String path= model.getmUrl();
+        Log.d("TAGTAG","     "+path);
+
+        Intent intent = new Intent(this,MusicPlayActivity.class);
+        intent.putExtra(SONG_PATH,path);
+        startActivity(intent);
+    }
+    private static final String SONG_PATH = "SONG_PATH";
 }

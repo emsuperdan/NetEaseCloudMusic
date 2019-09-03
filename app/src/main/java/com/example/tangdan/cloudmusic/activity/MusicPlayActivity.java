@@ -13,12 +13,15 @@ import com.example.tangdan.cloudmusic.component.MusicPlayProgressBar;
 import java.io.IOException;
 
 public class MusicPlayActivity extends BaseActivity implements View.OnClickListener, MusicPlayProgressBar.ProgressBarListener {
+    private static final String SONG_PATH = "SONG_PATH";
+
     private MusicPlayProgressBar mMusicPlayProgressBar;
     private Button mPlayButton;
 
     private MediaPlayer mMediaPlayer;
     private MyMusicThread mTread;
     private int mDuration;
+    private String mSongPath;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -55,9 +58,9 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mPlayButton = (Button) findViewById(R.id.btn_stoporplay);
         mPlayButton.setOnClickListener(this);
         mMusicPlayProgressBar.setProgressBarListener(this);
-
+        mSongPath = getIntent().getStringExtra(SONG_PATH);
         try {
-            mMediaPlayer.setDataSource("/storage/emulated/0/netease/cloudmusic/Music/Lucky Stroke - Good Day.mp3");
+            mMediaPlayer.setDataSource(mSongPath);
             mMediaPlayer.prepare();
             mMediaPlayer.start();
         } catch (IOException e) {
@@ -88,7 +91,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
                 while (pause) {
                     onPause();
                 }
-                if (mDuration != -1 && mMediaPlayer.isPlaying()) {
+                if (mDuration != -1 && mMediaPlayer != null && mMediaPlayer.isPlaying()) {
                     currentPos = mMediaPlayer.getCurrentPosition();
                     Message msg = Message.obtain();
                     msg.obj = currentPos;

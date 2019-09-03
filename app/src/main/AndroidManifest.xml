@@ -19,7 +19,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activity.LocalMusicActivity">
+        <activity
+            android:launchMode="singleTask"
+            android:name=".activity.LocalMusicActivity">
         </activity>
 
         <activity android:name=".activity.MusicPlayActivity">
