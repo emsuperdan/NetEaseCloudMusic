@@ -70,8 +70,8 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
 
     @Override
     public void jumpPosToPlay(float pos) {
-        int totalSec= mDuration;
-        mMediaPlayer.seekTo((int)(totalSec*pos));
+        int totalSec = mDuration;
+        mMediaPlayer.seekTo((int) (totalSec * pos));
     }
 
     private class MyMusicThread extends Thread {

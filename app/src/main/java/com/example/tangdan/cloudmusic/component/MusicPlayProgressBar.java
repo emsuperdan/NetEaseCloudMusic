@@ -1,15 +1,11 @@
 package com.example.tangdan.cloudmusic.component;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 
 import com.example.tangdan.cloudmusic.R;
 
@@ -45,20 +41,6 @@ public class MusicPlayProgressBar extends View {
         initParameters();
     }
 
-    private int getScreenWidth() {
-        WindowManager manager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        manager.getDefaultDisplay().getMetrics(displayMetrics);
-        return displayMetrics.widthPixels;
-    }
-
-    private int getScreenHeight() {
-        WindowManager manager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        manager.getDefaultDisplay().getMetrics(displayMetrics);
-        return displayMetrics.heightPixels;
-    }
-
     private void initParameters() {
         mPaint = new Paint();
         mPaint.setStyle(Paint.Style.FILL);
@@ -69,8 +51,8 @@ public class MusicPlayProgressBar extends View {
         mThumbPaint.setColor(mContext.getResources().getColor(R.color.white));
     }
 
-    public void setProgressBarListener(ProgressBarListener listener){
-        this.listener=listener;
+    public void setProgressBarListener(ProgressBarListener listener) {
+        this.listener = listener;
     }
 
     @Override
@@ -86,16 +68,23 @@ public class MusicPlayProgressBar extends View {
         canvas.drawRect(0, (float) (progressHeight / 2 - 3.5), progressWidth,
                 (float) (progressHeight / 2 + 3.5), mPaint);
 
-        canvas.drawCircle((float) (7.5 + getProgress() * 200), progressHeight / 2,
+        canvas.drawCircle((float) (7.5 + getProgress() * (progressWidth - 7.5)), progressHeight / 2,
                 (float) 7.5, mThumbPaint);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                X = event.getX();
-                Log.d("TAG")
+            case MotionEvent.ACTION_MOVE:
+                float moveX = event.getX();
+                if (moveX > 400) {
+                    moveX = 400;
+                }
+                if (moveX < 0) {
+                    moveX = 0;
+                }
+                float movePos = moveX / progressWidth;
+                setProgress(movePos);
                 break;
             case MotionEvent.ACTION_UP:
                 float newX = event.getX();
@@ -105,7 +94,7 @@ public class MusicPlayProgressBar extends View {
                 if (newX < 0) {
                     newX = 0;
                 }
-                float pos = (newX - X) / progressWidth;
+                float pos = newX / progressWidth;
                 setProgress(pos);
                 listener.jumpPosToPlay(pos);
                 break;
@@ -113,7 +102,7 @@ public class MusicPlayProgressBar extends View {
         return true;
     }
 
-    public interface ProgressBarListener{
+    public interface ProgressBarListener {
         void jumpPosToPlay(float pos);
     }
 
