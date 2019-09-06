@@ -1,35 +1,44 @@
 package com.example.tangdan.cloudmusic.activity;
 
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import com.example.tangdan.cloudmusic.R;
 import com.example.tangdan.cloudmusic.component.MusicPlayProgressBar;
+import com.example.tangdan.cloudmusic.service.MusicPlayService;
 
 import java.io.IOException;
 
 public class MusicPlayActivity extends BaseActivity implements View.OnClickListener, MusicPlayProgressBar.ProgressBarListener {
     private static final String SONG_PATH = "SONG_PATH";
+    private static final String TAG = "MusicPlayActivity";
 
     private MusicPlayProgressBar mMusicPlayProgressBar;
     private Button mPlayButton;
 
     private MediaPlayer mMediaPlayer;
-    private MyMusicThread mTread;
     private int mDuration;
     private String mSongPath;
+    private MyConnection mConnection;
+    private MusicPlayService.MyBinder mPlayService;
+
+
 
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 0X00:
-                    int pos = (int) msg.obj;
-                    mMusicPlayProgressBar.setProgress((float) pos / mMediaPlayer.getDuration());
+                    mMusicPlayProgressBar.setProgress((float) mPlayService.getPlayPos() / mMediaPlayer.getDuration());
                     break;
                 default:
                     break;
@@ -53,22 +62,15 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_musicplay);
-        mMediaPlayer = new MediaPlayer();
         mMusicPlayProgressBar = (MusicPlayProgressBar) findViewById(R.id.progress_music_bar);
         mPlayButton = (Button) findViewById(R.id.btn_stoporplay);
         mPlayButton.setOnClickListener(this);
         mMusicPlayProgressBar.setProgressBarListener(this);
         mSongPath = getIntent().getStringExtra(SONG_PATH);
-        try {
-            mMediaPlayer.setDataSource(mSongPath);
-            mMediaPlayer.prepare();
-            mMediaPlayer.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        mTread = new MyMusicThread();
-        mTread.start();
+        mConnection = new MyConnection();
+        Intent intent= new Intent(this, MusicPlayService.class);
+        startService(intent);
+        bindService(intent,mConnection,BIND_AUTO_CREATE);
     }
 
     @Override
@@ -77,74 +79,28 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mMediaPlayer.seekTo((int) (totalSec * pos));
     }
 
-    private class MyMusicThread extends Thread {
-        private final Object lock = new Object();
-        private volatile boolean pause = false;
-
-        int currentPos;
-
-        @Override
-        public void run() {
-            super.run();
-            mDuration = mMediaPlayer.getDuration();
-            while (true) {
-                while (pause) {
-                    onPause();
-                }
-                if (mDuration != -1 && mMediaPlayer != null && mMediaPlayer.isPlaying()) {
-                    currentPos = mMediaPlayer.getCurrentPosition();
-                    Message msg = Message.obtain();
-                    msg.obj = currentPos;
-                    msg.what = 0X00;
-                    mHandler.sendMessage(msg);
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        break;
-                    }
-                }
-            }
-        }
-
-        public void onPauseThread() {
-            pause = true;
-        }
-
-        public void onResumeThread() {
-            pause = false;
-            synchronized (lock) {
-                lock.notifyAll();
-            }
-        }
-
-        private void onPause() {
-            synchronized (lock) {
-                try {
-                    lock.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-
-    }
-
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_stoporplay:
-                if (mMediaPlayer.isPlaying()) {
-                    mMediaPlayer.pause();
-                    mTread.onPauseThread();
-                } else {
-                    mTread.onResumeThread();
-                    mMediaPlayer.start();
-                }
+                boolean flag = mPlayService.isPlaying();
+                mPlayService.setPlay(!flag);
                 break;
             default:
                 break;
+        }
+    }
+
+    private class MyConnection implements ServiceConnection{
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mPlayService = (MusicPlayService.MyBinder) service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
         }
     }
 }
