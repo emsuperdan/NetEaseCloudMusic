@@ -3,11 +3,11 @@ package com.example.tangdan.cloudmusic.activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -22,11 +22,9 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     private MusicPlayProgressBar mMusicPlayProgressBar;
     private Button mPlayButton;
 
-    private MediaPlayer mMediaPlayer;
     private String mSongPath;
     private MyConnection mConnection;
     private MusicPlayService.MyBinder mPlayService;
-    private IPlayService mIface;
 
 
     private Handler mHandler = new Handler() {
@@ -34,7 +32,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 0X00:
-                    mMusicPlayProgressBar.setProgress((float) mPlayService.getPlayPos() / mMediaPlayer.getDuration());
+                    mMusicPlayProgressBar.setProgress((float) mPlayService.getPlayPos() / mPlayService.getPlayDuration());
                     break;
                 default:
                     break;
@@ -46,12 +44,6 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     protected void onDestroy() {
         super.onDestroy();
         mHandler.removeCallbacksAndMessages(null);
-        if (mMediaPlayer != null) {
-            mMediaPlayer.stop();
-            mMediaPlayer.reset();
-            mMediaPlayer.release();
-            mMediaPlayer = null;
-        }
     }
 
     @Override
@@ -63,20 +55,16 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mPlayButton.setOnClickListener(this);
         mMusicPlayProgressBar.setProgressBarListener(this);
         mSongPath = getIntent().getStringExtra(SONG_PATH);
-        mIface.setSongUri(mSongPath);
         mConnection = new MyConnection();
         Intent intent = new Intent(this, MusicPlayService.class);
+        intent.putExtra(SONG_PATH,mSongPath);
         startService(intent);
         bindService(intent, mConnection, BIND_AUTO_CREATE);
     }
 
     @Override
     public void jumpPosToPlay(float pos) {
-        mIface.jumpPosToPlayService(pos);
-    }
-
-    public void setPlayServiceListener(IPlayService mIface) {
-        this.mIface = mIface;
+        mPlayService.setPosToPlay(pos);
     }
 
     @Override
@@ -96,17 +84,12 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mPlayService = (MusicPlayService.MyBinder) service;
+            mPlayService.setSongUri(mSongPath);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
 
         }
-    }
-
-    public interface IPlayService {
-        void jumpPosToPlayService(float pos);
-
-        void setSongUri(String path);
     }
 }

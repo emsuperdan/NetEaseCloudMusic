@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.tangdan.cloudmusic">
 
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -20,12 +20,12 @@
         </activity>
 
         <activity
-            android:launchMode="singleTask"
-            android:name=".activity.LocalMusicActivity">
-        </activity>
+            android:name=".activity.LocalMusicActivity"
+            android:launchMode="singleTask"></activity>
 
-        <activity android:name=".activity.MusicPlayActivity">
-        </activity>
+        <activity android:name=".activity.MusicPlayActivity"></activity>
+
+        <service android:name=".service.MusicPlayService"></service>
     </application>
 
 </manifest>
