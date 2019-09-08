@@ -8,15 +8,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import com.example.tangdan.cloudmusic.R;
 import com.example.tangdan.cloudmusic.component.MusicPlayProgressBar;
 import com.example.tangdan.cloudmusic.service.MusicPlayService;
-
-import java.io.IOException;
 
 public class MusicPlayActivity extends BaseActivity implements View.OnClickListener, MusicPlayProgressBar.ProgressBarListener {
     private static final String SONG_PATH = "SONG_PATH";
@@ -26,11 +23,10 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     private Button mPlayButton;
 
     private MediaPlayer mMediaPlayer;
-    private int mDuration;
     private String mSongPath;
     private MyConnection mConnection;
     private MusicPlayService.MyBinder mPlayService;
-
+    private IPlayService mIface;
 
 
     private Handler mHandler = new Handler() {
@@ -67,16 +63,20 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mPlayButton.setOnClickListener(this);
         mMusicPlayProgressBar.setProgressBarListener(this);
         mSongPath = getIntent().getStringExtra(SONG_PATH);
+        mIface.setSongUri(mSongPath);
         mConnection = new MyConnection();
-        Intent intent= new Intent(this, MusicPlayService.class);
+        Intent intent = new Intent(this, MusicPlayService.class);
         startService(intent);
-        bindService(intent,mConnection,BIND_AUTO_CREATE);
+        bindService(intent, mConnection, BIND_AUTO_CREATE);
     }
 
     @Override
     public void jumpPosToPlay(float pos) {
-        int totalSec = mDuration;
-        mMediaPlayer.seekTo((int) (totalSec * pos));
+        mIface.jumpPosToPlayService(pos);
+    }
+
+    public void setPlayServiceListener(IPlayService mIface) {
+        this.mIface = mIface;
     }
 
     @Override
@@ -91,7 +91,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         }
     }
 
-    private class MyConnection implements ServiceConnection{
+    private class MyConnection implements ServiceConnection {
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -102,5 +102,11 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         public void onServiceDisconnected(ComponentName name) {
 
         }
+    }
+
+    public interface IPlayService {
+        void jumpPosToPlayService(float pos);
+
+        void setSongUri(String path);
     }
 }

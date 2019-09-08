@@ -8,11 +8,12 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Button;
 
+import com.example.tangdan.cloudmusic.activity.MusicPlayActivity;
 import com.example.tangdan.cloudmusic.component.MusicPlayProgressBar;
 
 import java.io.IOException;
 
-public class MusicPlayService extends Service{
+public class MusicPlayService extends Service implements MusicPlayActivity.IPlayService {
     private static final String SONG_PATH = "SONG_PATH";
     private static final String TAG = "MusicPlayActivity";
 
@@ -25,19 +26,14 @@ public class MusicPlayService extends Service{
     private int mDuration;
     private String mSongPath;
     private int currentPos;
-    private IPlayService serviceListener;
+    private MusicPlayActivity activity;
 
     @Override
     public void onCreate() {
         super.onCreate();
         mMediaPlayer = new MediaPlayer();
-        try {
-            mMediaPlayer.setDataSource(mSongPath);
-            mMediaPlayer.prepare();
-            mMediaPlayer.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        activity = new MusicPlayActivity();
+        activity.setPlayServiceListener(this);
         mRunnable = new MyRunnable();
         mThread = new Thread(mRunnable);
         mThread.start();
@@ -50,6 +46,14 @@ public class MusicPlayService extends Service{
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        try {
+            mMediaPlayer.setDataSource(mSongPath);
+            mMediaPlayer.prepare();
+            mMediaPlayer.start();
+            mDuration = mMediaPlayer.getDuration();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -58,12 +62,18 @@ public class MusicPlayService extends Service{
         return super.stopService(name);
     }
 
-    public void setServiceListener(IPlayService serviceListener){
-        this.serviceListener =serviceListener;
+    @Override
+    public void jumpPosToPlayService(float pos) {
+        mMediaPlayer.seekTo((int) pos * mDuration);
+    }
+
+    @Override
+    public void setSongUri(String path) {
+        this.mSongPath = path;
     }
 
     public class MyBinder extends Binder {
-        public int getPlayPos(){
+        public int getPlayPos() {
             return currentPos;
         }
 
@@ -74,7 +84,7 @@ public class MusicPlayService extends Service{
         public void setPlay(boolean enabled) {
             if (enabled) {
                 mMediaPlayer.pause();
-            }else {
+            } else {
                 mMediaPlayer.start();
             }
         }
@@ -86,7 +96,6 @@ public class MusicPlayService extends Service{
 
         @Override
         public void run() {
-            mDuration = mMediaPlayer.getDuration();
             while (true) {
                 while (pause) {
                     onPause();
@@ -133,7 +142,4 @@ public class MusicPlayService extends Service{
         }
     }
 
-    interface IPlayService {
-        float getJumpPos(float pos);
-    }
 }
