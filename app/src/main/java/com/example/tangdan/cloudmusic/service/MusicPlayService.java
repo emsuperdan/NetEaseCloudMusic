@@ -7,8 +7,6 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.example.tangdan.cloudmusic.activity.MusicPlayActivity;
-
 import java.io.IOException;
 
 public class MusicPlayService extends Service {
@@ -38,14 +36,14 @@ public class MusicPlayService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand");
-        if (intent != null) {
-            mSongPath = intent.getStringExtra(SONG_PATH);
-        }
         try {
-            mMediaPlayer.setDataSource(mSongPath);
-            mMediaPlayer.prepare();
-            mMediaPlayer.start();
+            if (!intent.getStringExtra(SONG_PATH).equals(mSongPath)) {
+                mSongPath = intent.getStringExtra(SONG_PATH);
+                mMediaPlayer.reset();
+                mMediaPlayer.setDataSource(mSongPath);
+                mMediaPlayer.prepare();
+                mMediaPlayer.start();
+            }
             mDuration = mMediaPlayer.getDuration();
         } catch (IOException e) {
             e.printStackTrace();
@@ -74,7 +72,7 @@ public class MusicPlayService extends Service {
         }
 
         public void setPosToPlay(float pos) {
-            mMediaPlayer.seekTo((int) pos * mDuration);
+            mMediaPlayer.seekTo((int) (pos * mDuration));
         }
 
         public int getPlayPos() {
@@ -87,9 +85,9 @@ public class MusicPlayService extends Service {
 
         public void setPlay(boolean enabled) {
             if (enabled) {
-                mMediaPlayer.pause();
-            } else {
                 mMediaPlayer.start();
+            } else {
+                mMediaPlayer.pause();
             }
         }
     }
@@ -104,15 +102,10 @@ public class MusicPlayService extends Service {
                         flag = mMediaPlayer.isPlaying();
                     } catch (Exception e) {
                         Log.d(TAG, "Error since mediaplay is released" + e);
+                        break;
                     }
                     if (mDuration != -1 && flag) {
                         currentPos = mMediaPlayer.getCurrentPosition();
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                            break;
-                        }
                     }
                 }
             }

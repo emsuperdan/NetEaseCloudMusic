@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -26,7 +25,6 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     private MyConnection mConnection;
     private MusicPlayService.MyBinder mPlayService;
 
-
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -39,6 +37,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
             }
         }
     };
+
 
     @Override
     protected void onDestroy() {
@@ -57,9 +56,29 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mSongPath = getIntent().getStringExtra(SONG_PATH);
         mConnection = new MyConnection();
         Intent intent = new Intent(this, MusicPlayService.class);
-        intent.putExtra(SONG_PATH,mSongPath);
+        intent.putExtra(SONG_PATH, mSongPath);
         startService(intent);
         bindService(intent, mConnection, BIND_AUTO_CREATE);
+        MyThread thread = new MyThread();
+        thread.start();
+    }
+
+    private class MyThread extends Thread {
+
+        @Override
+        public void run() {
+            super.run();
+            while (true) {
+                if (mPlayService != null) {
+                    mHandler.sendEmptyMessage(0x00);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }
 
     @Override
