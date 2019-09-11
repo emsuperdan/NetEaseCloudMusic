@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LocalMusicActivity extends BaseActivity implements AdapterView.OnItemClickListener {
+    private static final String BROADCAST_ACTION = "broadcast_action_song_path";
+    private static final String BROADCAST_ACTION_KEY = "broadcast_action_song_path_key";
     private ListView mListView;
     private LocalMicAdapter mAdapter;
     private List<MusicModel> mList;
