@@ -37,7 +37,7 @@ public class MusicPlayService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
-            if (!intent.getStringExtra(SONG_PATH).equals(mSongPath)) {
+            if (intent != null && !intent.getStringExtra(SONG_PATH).equals(mSongPath)) {
                 mSongPath = intent.getStringExtra(SONG_PATH);
                 mMediaPlayer.reset();
                 mMediaPlayer.setDataSource(mSongPath);
@@ -88,6 +88,19 @@ public class MusicPlayService extends Service {
                 mMediaPlayer.start();
             } else {
                 mMediaPlayer.pause();
+            }
+        }
+
+        public void playNextSong(String songPath) {
+            try {
+                mSongPath = songPath;
+                mMediaPlayer.reset();
+                mMediaPlayer.setDataSource(songPath);
+                mMediaPlayer.prepare();
+                mMediaPlayer.start();
+                mDuration = mMediaPlayer.getDuration();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
