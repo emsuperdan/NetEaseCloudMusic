@@ -21,10 +21,27 @@
             android:layout_width="200dp"
             android:layout_height="15dp" />
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/btn_lastsong"
+                android:text="上一首"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
         <Button
             android:id="@+id/btn_stoporplay"
             android:text="暂停/播放"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/btn_nextsong"
+                android:text="下一首"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>
