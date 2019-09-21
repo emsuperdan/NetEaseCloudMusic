@@ -21,21 +21,27 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 
-import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_KEY;
+import static com.example.tangdan.cloudmusic.utils.Constants.BROADCAST_ACTION;
+import static com.example.tangdan.cloudmusic.utils.Constants.BROADCAST_ACTION_KEY;
+import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY;
+import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SONG_NAME_KEY;
+import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SONG_PATH_ISPLAYING_KEY;
+import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SONG_PATH_KEY;
 
 public class MusicPlayActivity extends BaseActivity implements View.OnClickListener, MusicPlayProgressBar.ProgressBarListener {
     private static final String SONG_PATH = "SONG_PATH";
-    private static final String TAG = "MusicPlayActivity";
-    private static final String SP_SONG_PATH = "SP_SONG_PATH";
 
     private MusicPlayProgressBar mMusicPlayProgressBar;
     private Button mPlayButton, mLastButton, mNextButton;
 
     private String mSongPath;
-    private ArrayList<String> mSongList;
+    private String mSongName;
+    private ArrayList<String> mSongPathList;
+    private ArrayList<String> mSongNameList;
     private PreferenceUtil mPreferenceUtil;
     private MyConnection mConnection;
     private MusicPlayService.MyBinder mPlayService;
+    private Intent songIntent;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -70,9 +76,13 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mNextButton.setOnClickListener(this);
         mMusicPlayProgressBar.setProgressBarListener(this);
         mPreferenceUtil = PreferenceUtil.getInstance(this);
-        mSongList = getSongListFromsp();
-        mSongPath = getIntent().getStringExtra(SONG_PATH);
+        mSongPathList = getSongPathListFromSp();
+        mSongNameList = getSongNameListFromSp();
+        mSongName = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY);
+        mSongPath = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_PATH_ISPLAYING_KEY);
         mConnection = new MyConnection();
+        songIntent = new Intent();
+        songIntent.setAction(BROADCAST_ACTION);
         Intent intent = new Intent(this, MusicPlayService.class);
         intent.putExtra(SONG_PATH, mSongPath);
         startService(intent);
@@ -81,9 +91,25 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         thread.start();
     }
 
-    public ArrayList<String> getSongListFromsp() {
+    public ArrayList<String> getSongPathListFromSp() {
         ArrayList<String> list = new ArrayList<>();
-        String json = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_KEY);
+        String json = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_PATH_KEY);
+        if (!TextUtils.isEmpty(json)) {
+            try {
+                JSONArray array = new JSONArray(json);
+                for (int i = 0; i < array.length(); i++) {
+                    list.add(array.optString(i));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return list;
+    }
+
+    public ArrayList<String> getSongNameListFromSp() {
+        ArrayList<String> list = new ArrayList<>();
+        String json = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_NAME_KEY);
         if (!TextUtils.isEmpty(json)) {
             try {
                 JSONArray array = new JSONArray(json);
@@ -129,43 +155,48 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
                 break;
             case R.id.btn_lastsong:
                 int pos = 0;
-                if (mSongList.size() == 0 || mSongList.size() == 1) {
+                if (mSongPathList.size() == 0 || mSongPathList.size() == 1) {
                     return;
                 }
-                for (int i = 0; i < mSongList.size(); i++) {
-                    if (mSongList.get(i).equals(mSongPath)) {
+                for (int i = 0; i < mSongPathList.size(); i++) {
+                    if (mSongPathList.get(i).equals(mSongPath)) {
                         if (i == 0) {
-                            pos = mSongList.size() - 1;
+                            pos = mSongPathList.size() - 1;
                         } else {
                             pos = i - 1;
                         }
                         break;
                     }
                 }
-                mSongPath = mSongList.get(pos);
+                mSongPath = mSongPathList.get(pos);
+                mSongName = mSongNameList.get(pos);
                 mPlayService.playNextSong(mSongPath);
                 break;
             case R.id.btn_nextsong:
                 int pos1 = 0;
-                if (mSongList.size() == 0 || mSongList.size() == 1) {
+                if (mSongPathList.size() == 0 || mSongPathList.size() == 1) {
                     return;
                 }
-                for (int i = 0; i < mSongList.size(); i++) {
-                    if (mSongList.get(i).equals(mSongPath)) {
-                        if (i == mSongList.size() - 1) {
-                            pos1 = 0;
-                        } else {
+                for (int i = 0; i < mSongPathList.size(); i++) {
+                    if (mSongPathList.get(i).equals(mSongPath)) {
+                        if (i != mSongPathList.size() - 1) {
                             pos1 = i + 1;
                         }
                         break;
                     }
                 }
-                mSongPath = mSongList.get(pos1);
+                mSongPath = mSongPathList.get(pos1);
+                mSongName = mSongNameList.get(pos1);
                 mPlayService.playNextSong(mSongPath);
                 break;
             default:
                 break;
         }
+        songIntent.putExtra(BROADCAST_ACTION_KEY, mSongName);
+        sendBroadcast(songIntent);
+
+        PreferenceUtil.getInstance(this).putPreferenceString(PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY, mSongName);
+        PreferenceUtil.getInstance(this).putPreferenceString(PREF_PREFERENCE_SONG_PATH_ISPLAYING_KEY, mSongPath);
     }
 
     private class MyConnection implements ServiceConnection {
