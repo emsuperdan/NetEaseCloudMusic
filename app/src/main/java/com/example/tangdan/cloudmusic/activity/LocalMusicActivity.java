@@ -42,6 +42,7 @@ public class LocalMusicActivity extends BaseActivity implements AdapterView.OnIt
     private PreferenceUtil mPreferenceUtil;
     private SongNameBroadCastReceiver mSongNameBroadCastReceiver;
     private LinearLayout mBottomLinearLayout;
+    private Intent songIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,10 +55,13 @@ public class LocalMusicActivity extends BaseActivity implements AdapterView.OnIt
         mListView.setOnItemClickListener(this);
         mBottomLinearLayout.setOnClickListener(this);
         mSongName.setText(PreferenceUtil.getInstance(this).getPreferenceString(PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY));
+
         mSongNameBroadCastReceiver = new SongNameBroadCastReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(BROADCAST_ACTION);
         registerReceiver(mSongNameBroadCastReceiver, filter);
+        songIntent = new Intent();
+        songIntent.setAction(BROADCAST_ACTION);
     }
 
     private void initData() {
@@ -108,6 +112,9 @@ public class LocalMusicActivity extends BaseActivity implements AdapterView.OnIt
 
         Intent intent = new Intent(this, MusicPlayActivity.class);
         startActivity(intent);
+
+        songIntent.putExtra(BROADCAST_ACTION_KEY, name);
+        sendBroadcast(songIntent);
 
         PreferenceUtil.getInstance(this).putPreferenceString(PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY, name);
         PreferenceUtil.getInstance(this).putPreferenceString(PREF_PREFERENCE_SONG_PATH_ISPLAYING_KEY, path);

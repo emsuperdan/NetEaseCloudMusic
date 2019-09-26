@@ -10,8 +10,8 @@
     <include layout="@layout/activity_main_secondmenu_head"/>
 
     <include
-        android:id="@+id/ll_mine"
-        layout="@layout/scrollview_main_mine_layout" />
+        android:id="@+id/ll_mine_container"
+        layout="@layout/activity_ll_container_layout" />
 
     <include
         android:id="@+id/ll_bottom_playing_song"
