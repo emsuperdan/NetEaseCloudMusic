@@ -5,13 +5,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.tangdan.cloudmusic.R;
+import com.example.tangdan.cloudmusic.adapter.MyViewPagerAdapter;
+import com.example.tangdan.cloudmusic.component.FragmentIndicatorView;
 import com.example.tangdan.cloudmusic.present.BasePresenter;
 import com.example.tangdan.cloudmusic.utils.PreferenceUtil;
 
@@ -22,15 +27,18 @@ import static com.example.tangdan.cloudmusic.utils.Constants.BROADCAST_ACTION;
 import static com.example.tangdan.cloudmusic.utils.Constants.BROADCAST_ACTION_KEY;
 import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY;
 
-public class MainActivity extends BaseActivity implements View.OnClickListener {
+public class MainActivity extends BaseActivity implements View.OnClickListener, ViewPager.OnPageChangeListener {
     private BasePresenter presenter;
     private BaseFragment[] baseFragment;
     private FragmentManager mFragmentManager;
-    private FragmentTransaction mTransaction;
     private TextView mSongText;
-    private LinearLayout mBottomPlayingSong , ;
+    private LinearLayout mBottomPlayingSong, mMineLinearLayout, mFindLinearLayout, mRadioLinearLayout;
     private SongNameBroadCastReceiver mSongNameBroadCastReceiver;
-    private List<View> mIndicatorList;
+    private ViewPager mViewPager;
+    private MyViewPagerAdapter mViewPagerAdapter;
+    private List<Fragment> mFragmentList;
+    private FragmentIndicatorView mFragmentIndicatorView;
+    private int mCurrentPos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,21 +53,25 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         baseFragment = new BaseFragment[3];
         initFragment();
         mFragmentManager = getSupportFragmentManager();
-        mTransaction = mFragmentManager.beginTransaction();
-        mTransaction.add(R.id.ll_mine_container, baseFragment[0], "MINEFRAGMENT");
-        mTransaction.commit();
 
         mSongText = (TextView) findViewById(R.id.tv_song_name);
         mSongText.setText(PreferenceUtil.getInstance(this).getPreferenceString(PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY));
         mBottomPlayingSong = (LinearLayout) findViewById(R.id.ll_bottom_playing_song);
+        mFindLinearLayout = (LinearLayout) findViewById(R.id.ll_find_indicator);
+        mMineLinearLayout = (LinearLayout) findViewById(R.id.ll_mine_indicator);
+        mRadioLinearLayout = (LinearLayout) findViewById(R.id.ll_radio_indicator);
+        mFragmentIndicatorView = (FragmentIndicatorView) findViewById(R.id.fragmentindicator_view);
+        mViewPager = (ViewPager) findViewById(R.id.fragment_viewpager);
+        mViewPagerAdapter = new MyViewPagerAdapter(mFragmentManager, mFragmentList);
+        mViewPager.setAdapter(mViewPagerAdapter);
+        switchFragment(1);
+        mCurrentPos = 1;
+
+        mViewPager.addOnPageChangeListener(this);
+        mFindLinearLayout.setOnClickListener(this);
+        mMineLinearLayout.setOnClickListener(this);
+        mRadioLinearLayout.setOnClickListener(this);
         mBottomPlayingSong.setOnClickListener(this);
-        mIndicatorList = new ArrayList<>();
-        int[] res = new int[]{R.id.view_find_indicator, R.id.view_mine_indicator, R.id.view_radio_indicator};
-        for (int i = 0; i < 3; i++) {
-            View view = findViewById(res[i]);
-            mIndicatorList.add(view);
-        }
-        showIndicator(1);
         mSongNameBroadCastReceiver = new SongNameBroadCastReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(BROADCAST_ACTION);
@@ -67,16 +79,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void initFragment() {
-        baseFragment[0] = new MineFragment();
-        baseFragment[1] = new FindFragment();
+        baseFragment[0] = new FindFragment();
+        baseFragment[1] = new MineFragment();
         baseFragment[2] = new RadioFragment();
-    }
-
-    private void showIndicator(int endPos) {
-        for (int i = 0; i < mIndicatorList.size(); i++) {
-            mIndicatorList.get(i).setVisibility(View.INVISIBLE);
-        }
-        mIndicatorList.get(endPos).setVisibility(View.VISIBLE);
+        mFragmentList = new ArrayList<>();
+        mFragmentList.add(baseFragment[0]);
+        mFragmentList.add(baseFragment[1]);
+        mFragmentList.add(baseFragment[2]);
     }
 
     @Override
@@ -87,6 +96,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
+    public void switchFragment(int pos) {
+        FragmentTransaction transaction = mFragmentManager.beginTransaction();
+        mViewPager.setCurrentItem(pos);
+        mCurrentPos = pos;
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -95,22 +110,48 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 startActivity(playMusicIntent);
                 break;
             case R.id.ll_find_indicator:
-                showIndicator(0);
-                if (!mTransaction.isEmpty()) {
-                    mTransaction.replace(R.id.ll_mine_container, baseFragment[0]).commit();
-                }
+                switchFragment(0);
+                mFragmentIndicatorView.setIndicatorPos(0,1);
                 break;
             case R.id.ll_mine_indicator:
-                showIndicator(1);
-                if (!mTransaction.isEmpty()) {
-                    mTransaction.replace(R.id.ll_mine_container, baseFragment[1]).commit();
-                }
+                switchFragment(1);
+                mFragmentIndicatorView.setIndicatorPos(1,1);
                 break;
             case R.id.ll_radio_indicator:
-                showIndicator(2);
-                if (!mTransaction.isEmpty()) {
-                    mTransaction.replace(R.id.ll_mine_container, baseFragment[2]).commit();
-                }
+                switchFragment(2);
+                mFragmentIndicatorView.setIndicatorPos(2,1);
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onPageScrolled(int i, float v, int i1) {
+        Log.d("TAGTAG","i:  "+i+"-------"+"v:  "+v+"------"+"i1:  "+i1);
+        mFragmentIndicatorView.setIndicatorPos(i,v);
+    }
+
+    @Override
+    public void onPageSelected(int i) {
+
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int i) {
+        int pos = mViewPager.getCurrentItem();
+        switch (pos) {
+            case 0:
+                switchFragment(0);
+                mFragmentIndicatorView.setIndicatorPos(0,1);
+                break;
+            case 1:
+                switchFragment(1);
+                mFragmentIndicatorView.setIndicatorPos(1,1);
+                break;
+            case 2:
+                switchFragment(2);
+                mFragmentIndicatorView.setIndicatorPos(2,1);
                 break;
             default:
                 break;
