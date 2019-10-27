@@ -11,20 +11,47 @@ import com.example.tangdan.cloudmusic.R;
 
 import static com.example.tangdan.cloudmusic.utils.Constants.PUBLIC_TAG;
 
-public class DActivity extends AppCompatActivity {
-    public static final String TAG = "DActivity";
+public class AActivity extends AppCompatActivity {
+    public static final String TAG = "AActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_d);
+        setContentView(R.layout.activity_a);
         Log.d(PUBLIC_TAG,TAG+"-------onCreate");
 
         Button standardButton = findViewById(R.id.standard);
         standardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(DActivity.this, AActivity.class);
+                Intent intent = new Intent(AActivity.this, BActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button singletopButton = findViewById(R.id.singletop);
+        singletopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AActivity.this, BActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button singleTaskButton = findViewById(R.id.singletask);
+        singleTaskButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AActivity.this, BActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button singleInstanceButton = findViewById(R.id.singleinstance);
+        singleInstanceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AActivity.this, BActivity.class);
                 startActivity(intent);
             }
         });

@@ -12,11 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".activity.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
         </activity>
 
         <activity
@@ -25,6 +25,19 @@
 
         <activity android:name=".activity.MusicPlayActivity"></activity>
 
+        <activity android:name=".loadmodelactivity.AActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".loadmodelactivity.BActivity"
+            android:taskAffinity="com.example.tangdan.cloudmusic_bbb"
+            android:excludeFromRecents="true">
+        </activity>
+        <activity android:name=".loadmodelactivity.CActivity"></activity>
+        <activity android:name=".loadmodelactivity.DActivity"></activity>
         <service android:name=".service.MusicPlayService"></service>
     </application>
 

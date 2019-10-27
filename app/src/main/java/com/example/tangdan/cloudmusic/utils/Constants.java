@@ -10,4 +10,6 @@ public class Constants {
     public static final String PREF_PREFERENCE_SONG_NAME_KEY = "PREF_PREFERENCE_SONG_NAME_KEY";
     public static final String PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY = "PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY";
     public static final String PREF_PREFERENCE_SONG_PATH_ISPLAYING_KEY = "PREF_PREFERENCE_SONG_PATH_ISPLAYING_KEY";
+
+    public static final String PUBLIC_TAG = "launchmode_tag";
 }
