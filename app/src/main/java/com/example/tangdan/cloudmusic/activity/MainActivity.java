@@ -111,15 +111,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 break;
             case R.id.ll_find_indicator:
                 switchFragment(0);
-                mFragmentIndicatorView.setIndicatorPos(0,1);
                 break;
             case R.id.ll_mine_indicator:
                 switchFragment(1);
-                mFragmentIndicatorView.setIndicatorPos(1,1);
                 break;
             case R.id.ll_radio_indicator:
                 switchFragment(2);
-                mFragmentIndicatorView.setIndicatorPos(2,1);
                 break;
             default:
                 break;
@@ -129,7 +126,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     @Override
     public void onPageScrolled(int i, float v, int i1) {
         Log.d("TAGTAG","i:  "+i+"-------"+"v:  "+v+"------"+"i1:  "+i1);
-        mFragmentIndicatorView.setIndicatorPos(i,v);
+
+        mFragmentIndicatorView.setIndicatorPos(i,mCurrentPos,v);
+        mCurrentPos = i;
     }
 
     @Override
@@ -139,23 +138,24 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     @Override
     public void onPageScrollStateChanged(int i) {
-        int pos = mViewPager.getCurrentItem();
-        switch (pos) {
-            case 0:
-                switchFragment(0);
-                mFragmentIndicatorView.setIndicatorPos(0,1);
-                break;
-            case 1:
-                switchFragment(1);
-                mFragmentIndicatorView.setIndicatorPos(1,1);
-                break;
-            case 2:
-                switchFragment(2);
-                mFragmentIndicatorView.setIndicatorPos(2,1);
-                break;
-            default:
-                break;
-        }
+        Log.d("TAGTAG","i    "+i);
+//        int pos = mViewPager.getCurrentItem();
+//        switch (pos) {
+//            case 0:
+//                switchFragment(0);
+//                mFragmentIndicatorView.setIndicatorPos(0, mCurrentPos);
+//                break;
+//            case 1:
+//                switchFragment(1);
+//                mFragmentIndicatorView.setIndicatorPos(1, 1);
+//                break;
+//            case 2:
+//                switchFragment(2);
+//                mFragmentIndicatorView.setIndicatorPos(2, 1);
+//                break;
+//            default:
+//                break;
+//        }
     }
 
     public class SongNameBroadCastReceiver extends BroadcastReceiver {
