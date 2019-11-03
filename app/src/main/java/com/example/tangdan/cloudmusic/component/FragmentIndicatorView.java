@@ -63,17 +63,13 @@ public class FragmentIndicatorView extends View {
         canvas.drawRect(left, 0, left + mIndicatorWidth, viewHeight, mIndicatorPaint);
     }
 
-    public void setIndicatorPos(int nowPos, int oldPos, float percent) {
-        Log.d("TAGTAG", "nowPs" + nowPos + "   oldPs" + oldPos + "   percent" + percent);
-        if (nowPos > oldPos) {
-            if (percent > 0.98) {
-                percent = 1;
-            }
+    public void setIndicatorPos(int pos, boolean isToRight, float percent) {
+        if (isToRight) {
+            mCurrentPos = pos + 1;
         } else {
-            percent = 1 - percent;
+            mCurrentPos = pos - 1;
         }
-        mCurrentPos = nowPos - 1;
-        mPercent = (oldPos - nowPos) * percent;
+        mPercent = percent;
         invalidate();
     }
 }

@@ -65,7 +65,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         mViewPagerAdapter = new MyViewPagerAdapter(mFragmentManager, mFragmentList);
         mViewPager.setAdapter(mViewPagerAdapter);
         switchFragment(1);
-        mCurrentPos = 1;
 
         mViewPager.addOnPageChangeListener(this);
         mFindLinearLayout.setOnClickListener(this);
@@ -123,12 +122,25 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }
     }
 
+    private float wholeV = -1;
+
     @Override
     public void onPageScrolled(int i, float v, int i1) {
-        Log.d("TAGTAG","i:  "+i+"-------"+"v:  "+v+"------"+"i1:  "+i1);
-
-        mFragmentIndicatorView.setIndicatorPos(i,mCurrentPos,v);
-        mCurrentPos = i;
+        Log.d("TAGTAG", "float v:" + v);
+        boolean isToRight = true;
+        if (i != mCurrentPos) {
+            isToRight = false;
+            if (v == 0) {
+                mCurrentPos = mViewPager.getCurrentItem();
+                v = 1;
+            }
+        } else {
+            if (v == 0) {
+                mCurrentPos = mViewPager.getCurrentItem();
+                v = 1;
+            }
+        }
+        mFragmentIndicatorView.setIndicatorPos(mCurrentPos, isToRight, v);
     }
 
     @Override
@@ -138,24 +150,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     @Override
     public void onPageScrollStateChanged(int i) {
-        Log.d("TAGTAG","i    "+i);
-//        int pos = mViewPager.getCurrentItem();
-//        switch (pos) {
-//            case 0:
-//                switchFragment(0);
-//                mFragmentIndicatorView.setIndicatorPos(0, mCurrentPos);
-//                break;
-//            case 1:
-//                switchFragment(1);
-//                mFragmentIndicatorView.setIndicatorPos(1, 1);
-//                break;
-//            case 2:
-//                switchFragment(2);
-//                mFragmentIndicatorView.setIndicatorPos(2, 1);
-//                break;
-//            default:
-//                break;
-//        }
     }
 
     public class SongNameBroadCastReceiver extends BroadcastReceiver {
