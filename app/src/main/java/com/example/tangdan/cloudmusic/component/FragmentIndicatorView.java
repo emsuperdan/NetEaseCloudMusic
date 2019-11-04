@@ -65,11 +65,18 @@ public class FragmentIndicatorView extends View {
 
     public void setIndicatorPos(int pos, boolean isToRight, float percent) {
         if (isToRight) {
-            mCurrentPos = pos + 1;
+            mCurrentPos = pos;
+            if (mCurrentPos>2){
+                mCurrentPos = 2;
+            }
+            mPercent = percent;
         } else {
             mCurrentPos = pos - 1;
+            if (mCurrentPos<0){
+                mCurrentPos = 0;
+            }
+            mPercent = percent-1;
         }
-        mPercent = percent;
         invalidate();
     }
 }

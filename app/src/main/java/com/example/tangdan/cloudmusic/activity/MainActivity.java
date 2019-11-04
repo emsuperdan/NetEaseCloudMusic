@@ -122,23 +122,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }
     }
 
-    private float wholeV = -1;
+    private boolean isToRight = true;
+
 
     @Override
     public void onPageScrolled(int i, float v, int i1) {
         Log.d("TAGTAG", "float v:" + v);
-        boolean isToRight = true;
         if (i != mCurrentPos) {
             isToRight = false;
-            if (v == 0) {
-                mCurrentPos = mViewPager.getCurrentItem();
-                v = 1;
-            }
-        } else {
-            if (v == 0) {
-                mCurrentPos = mViewPager.getCurrentItem();
-                v = 1;
-            }
+        }
+        if (v == 0 && i != mCurrentPos) {
+            v = 1;
         }
         mFragmentIndicatorView.setIndicatorPos(mCurrentPos, isToRight, v);
     }
