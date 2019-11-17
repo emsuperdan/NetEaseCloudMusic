@@ -16,7 +16,7 @@ public class FragmentIndicatorView extends View {
     private int viewWidth;
     private int viewHeight;
     private float mIndicatorWidth;
-    private int mCurrentPos;
+    private int mCurrentPos = 1;
     private int mNextPos;
     private float mPercent;
 
@@ -56,27 +56,19 @@ public class FragmentIndicatorView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        Log.d("TAGTAG", "mPercent:" + mPercent);
         canvas.drawRect(0, 0, viewWidth, viewHeight, mPaint);
 
-        float left = (float) (9 * viewWidth / 20) + (float) (viewWidth / 3 * mPercent);
+        float left = ((float) 7/60*viewWidth+mCurrentPos*viewWidth / 3) +(viewWidth / 3 * mPercent);
         canvas.drawRect(left, 0, left + mIndicatorWidth, viewHeight, mIndicatorPaint);
     }
 
     public void setIndicatorPos(int pos, boolean isToRight, float percent) {
         if (isToRight) {
-            mCurrentPos = pos;
-            if (mCurrentPos>2){
-                mCurrentPos = 2;
-            }
             mPercent = percent;
         } else {
-            mCurrentPos = pos - 1;
-            if (mCurrentPos<0){
-                mCurrentPos = 0;
-            }
             mPercent = percent-1;
         }
+        mCurrentPos = pos;
         invalidate();
     }
 }

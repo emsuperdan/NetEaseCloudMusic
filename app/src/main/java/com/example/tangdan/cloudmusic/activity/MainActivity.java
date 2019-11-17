@@ -122,28 +122,31 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }
     }
 
-    private boolean isToRight = true;
 
 
     @Override
     public void onPageScrolled(int i, float v, int i1) {
-        Log.d("TAGTAG", "float v:" + v);
-        if (i != mCurrentPos) {
+        boolean isToRight = true;
+        if (i != mCurrentPos && (i==mCurrentPos-1)) {
             isToRight = false;
         }
-        if (v == 0 && i != mCurrentPos) {
-            v = 1;
+        if (v == 0&& i != mCurrentPos ) {
+            if (isToRight){
+                v =1;
+            }
         }
         mFragmentIndicatorView.setIndicatorPos(mCurrentPos, isToRight, v);
     }
 
     @Override
     public void onPageSelected(int i) {
-
     }
 
     @Override
     public void onPageScrollStateChanged(int i) {
+        if (i == 0){
+            mCurrentPos = mViewPager.getCurrentItem();
+        }
     }
 
     public class SongNameBroadCastReceiver extends BroadcastReceiver {
