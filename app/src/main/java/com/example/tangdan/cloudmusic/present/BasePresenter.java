@@ -2,15 +2,15 @@ package com.example.tangdan.cloudmusic.present;
 
 import com.example.tangdan.cloudmusic.activity.BaseActivity;
 import com.example.tangdan.cloudmusic.callback.ICallBack;
-import com.example.tangdan.cloudmusic.model.BaseModel;
+import com.example.tangdan.cloudmusic.model.BaseAAAModel;
 
 public class BasePresenter implements IPresenter {
-    private BaseModel model;
+    private BaseAAAModel model;
     private BaseActivity view;
 
     public BasePresenter(BaseActivity view) {
         this.view = view;
-        model = new BaseModel();
+        model = new BaseAAAModel();
     }
 
     @Override

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import com.example.tangdan.cloudmusic.R;
@@ -58,7 +57,7 @@ public class FragmentIndicatorView extends View {
         super.onDraw(canvas);
         canvas.drawRect(0, 0, viewWidth, viewHeight, mPaint);
 
-        float left = ((float) 7/60*viewWidth+mCurrentPos*viewWidth / 3) +(viewWidth / 3 * mPercent);
+        float left = ((float) 7 / 60 * viewWidth + mCurrentPos * viewWidth / 3) + (viewWidth / 3 * mPercent);
         canvas.drawRect(left, 0, left + mIndicatorWidth, viewHeight, mIndicatorPaint);
     }
 
@@ -66,7 +65,7 @@ public class FragmentIndicatorView extends View {
         if (isToRight) {
             mPercent = percent;
         } else {
-            mPercent = percent-1;
+            mPercent = percent - 1;
         }
         mCurrentPos = pos;
         invalidate();

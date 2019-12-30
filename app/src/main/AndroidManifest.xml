@@ -3,6 +3,7 @@
     package="com.example.tangdan.cloudmusic">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"
@@ -24,6 +25,8 @@
             android:launchMode="singleTask"></activity>
         <activity android:name=".activity.MusicPlayActivity"></activity>
         <service android:name=".service.MusicPlayService"></service>
+        <activity android:name=".activity.SearchActivity">
+        </activity>
     </application>
 
 </manifest>

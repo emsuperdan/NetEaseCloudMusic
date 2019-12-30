@@ -13,6 +13,7 @@ import android.widget.Button;
 
 import com.example.tangdan.cloudmusic.R;
 import com.example.tangdan.cloudmusic.component.MusicPlayProgressBar;
+import com.example.tangdan.cloudmusic.model.MusicModel;
 import com.example.tangdan.cloudmusic.service.MusicPlayService;
 import com.example.tangdan.cloudmusic.utils.PreferenceUtil;
 
@@ -34,6 +35,8 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     private MusicPlayProgressBar mMusicPlayProgressBar;
     private Button mPlayButton, mLastButton, mNextButton;
 
+    private MusicModel mModel;
+    private Bundle mBundle;
     private String mSongPath;
     private String mSongName;
     private ArrayList<String> mSongPathList;
@@ -76,19 +79,33 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mNextButton.setOnClickListener(this);
         mMusicPlayProgressBar.setProgressBarListener(this);
         mPreferenceUtil = PreferenceUtil.getInstance(this);
-        mSongPathList = getSongPathListFromSp();
-        mSongNameList = getSongNameListFromSp();
-        mSongName = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY);
-        mSongPath = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_PATH_ISPLAYING_KEY);
-        mConnection = new MyConnection();
         songIntent = new Intent();
         songIntent.setAction(BROADCAST_ACTION);
+        mConnection = new MyConnection();
         Intent intent = new Intent(this, MusicPlayService.class);
-        intent.putExtra(SONG_PATH, mSongPath);
-        startService(intent);
-        bindService(intent, mConnection, BIND_AUTO_CREATE);
-        MyThread thread = new MyThread();
-        thread.start();
+
+        mBundle = getIntent().getExtras();
+        if (mBundle != null) {
+            mModel = (MusicModel) mBundle.getSerializable("musicmodel");
+            mSongName = TextUtils.isEmpty(mModel.getmTitle()) ? "哈哈哈为空" : mModel.getmTitle();
+            mSongPath = "http://ws.stream.qqmusic.qq.com/C1000039MnYb0qxYhV.m4a?fromtag=0&guid=126548448";
+            intent.putExtra(SONG_PATH, mSongPath);
+            startService(intent);
+            bindService(intent, mConnection, BIND_AUTO_CREATE);
+            MyThread thread = new MyThread();
+            thread.start();
+        } else {
+            mSongPathList = getSongPathListFromSp();
+            mSongNameList = getSongNameListFromSp();
+            mSongName = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY);
+            mSongPath = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_PATH_ISPLAYING_KEY);
+            intent.putExtra(SONG_PATH, mSongPath);
+            startService(intent);
+            bindService(intent, mConnection, BIND_AUTO_CREATE);
+            MyThread thread = new MyThread();
+            thread.start();
+        }
+
     }
 
     public ArrayList<String> getSongPathListFromSp() {

@@ -1,6 +1,10 @@
 package com.example.tangdan.cloudmusic.model;
 
-public class MusicModel {
+import java.io.Serializable;
+
+public class MusicModel implements BaseModel,Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String mTitle;
     private String mArtist;
     private long mId;
@@ -9,6 +13,7 @@ public class MusicModel {
     private String mUrl;
     private String mAlbum;
     private long mAlbumId;
+    private String mSongId;
 
     public String getmTitle() {
         return mTitle;
@@ -72,5 +77,18 @@ public class MusicModel {
 
     public void setmAlbumId(long mAlbumId) {
         this.mAlbumId = mAlbumId;
+    }
+
+    @Override
+    public TitleState getModelType() {
+        return TitleState.MUSICMODEL;
+    }
+
+    public String getmSongId() {
+        return mSongId;
+    }
+
+    public void setmSongId(String mSongId) {
+        this.mSongId = mSongId;
     }
 }

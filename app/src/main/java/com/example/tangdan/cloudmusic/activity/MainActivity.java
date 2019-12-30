@@ -9,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -31,7 +30,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     private BasePresenter presenter;
     private BaseFragment[] baseFragment;
     private FragmentManager mFragmentManager;
-    private TextView mSongText;
+    private TextView mSongText, mSearchText;
     private LinearLayout mBottomPlayingSong, mMineLinearLayout, mFindLinearLayout, mRadioLinearLayout;
     private SongNameBroadCastReceiver mSongNameBroadCastReceiver;
     private ViewPager mViewPager;
@@ -56,6 +55,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
         mSongText = (TextView) findViewById(R.id.tv_song_name);
         mSongText.setText(PreferenceUtil.getInstance(this).getPreferenceString(PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY));
+        mSearchText = (TextView) findViewById(R.id.tv_main_activity_search);
+        mSearchText.setOnClickListener(this);
         mBottomPlayingSong = (LinearLayout) findViewById(R.id.ll_bottom_playing_song);
         mFindLinearLayout = (LinearLayout) findViewById(R.id.ll_find_indicator);
         mMineLinearLayout = (LinearLayout) findViewById(R.id.ll_mine_indicator);
@@ -95,6 +96,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mSongNameBroadCastReceiver);
+    }
+
     public void switchFragment(int pos) {
         FragmentTransaction transaction = mFragmentManager.beginTransaction();
         mViewPager.setCurrentItem(pos);
@@ -117,22 +124,25 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             case R.id.ll_radio_indicator:
                 switchFragment(2);
                 break;
+            case R.id.tv_main_activity_search:
+                Intent intent = new Intent(this, SearchActivity.class);
+                startActivity(intent);
+                break;
             default:
                 break;
         }
     }
 
 
-
     @Override
     public void onPageScrolled(int i, float v, int i1) {
         boolean isToRight = true;
-        if (i != mCurrentPos && (i==mCurrentPos-1)) {
+        if (i != mCurrentPos && (i == mCurrentPos - 1)) {
             isToRight = false;
         }
-        if (v == 0&& i != mCurrentPos ) {
-            if (isToRight){
-                v =1;
+        if (v == 0 && i != mCurrentPos) {
+            if (isToRight) {
+                v = 1;
             }
         }
         mFragmentIndicatorView.setIndicatorPos(mCurrentPos, isToRight, v);
@@ -144,7 +154,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     @Override
     public void onPageScrollStateChanged(int i) {
-        if (i == 0){
+        if (i == 0) {
             mCurrentPos = mViewPager.getCurrentItem();
         }
     }

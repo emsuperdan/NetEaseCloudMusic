@@ -2,14 +2,18 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="60dp"
-    android:background="@color/red"
-    android:gravity="center_vertical">
+    android:background="@color/red">
 
-    <ImageView
+    <TextView
         android:id="@+id/iv_optionsmenu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/black" />
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:clickable="true"
+        android:text="主页"
+        android:textSize="25dp"
+        android:textStyle="bold" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -38,8 +42,14 @@
             android:src="@mipmap/ic_launcher" />
     </LinearLayout>
 
-    <View
-        android:layout_width="0dp"
+    <TextView
+        android:id="@+id/tv_main_activity_search"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="0.3" />
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:clickable="true"
+        android:text="搜索"
+        android:textSize="25dp"
+        android:textStyle="bold" />
 </RelativeLayout>

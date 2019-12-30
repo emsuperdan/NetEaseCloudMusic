@@ -3,10 +3,13 @@ package com.example.tangdan.cloudmusic.service;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 public class MusicPlayService extends Service {
@@ -39,13 +42,25 @@ public class MusicPlayService extends Service {
         try {
             if (intent != null && intent.getStringExtra(SONG_PATH) != null && !intent.getStringExtra(SONG_PATH).equals(mSongPath)) {
                 mSongPath = intent.getStringExtra(SONG_PATH);
+//                File file = new File(mSongPath);
+//                FileInputStream fis = new FileInputStream(file);
+//                mMediaPlayer.reset();
+//                mMediaPlayer.setDataSource(fis.getFD());
                 mMediaPlayer.reset();
-                mMediaPlayer.setDataSource(mSongPath);
-                mMediaPlayer.prepare();
+                mMediaPlayer.setDataSource(this,Uri.parse(mSongPath));
+                mMediaPlayer.prepareAsync();
                 mMediaPlayer.start();
+
+
+//                mSongPath = intent.getStringExtra(SONG_PATH);
+//                mMediaPlayer.reset();
+//                mMediaPlayer.setDataSource(mSongPath);
+//                mMediaPlayer.prepare();
+//                mMediaPlayer.start();
             }
             mDuration = mMediaPlayer.getDuration();
         } catch (IOException e) {
+            Log.d("TAGTAG", "error:" + e);
             e.printStackTrace();
         }
         return super.onStartCommand(intent, flags, startId);
