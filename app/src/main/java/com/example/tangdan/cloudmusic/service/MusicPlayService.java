@@ -2,14 +2,13 @@ package com.example.tangdan.cloudmusic.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 public class MusicPlayService extends Service {
@@ -22,6 +21,8 @@ public class MusicPlayService extends Service {
     private int mDuration;
     private String mSongPath;
     private int currentPos;
+
+    private boolean isSongPrepared;
 
     @Override
     public void onCreate() {
@@ -42,25 +43,22 @@ public class MusicPlayService extends Service {
         try {
             if (intent != null && intent.getStringExtra(SONG_PATH) != null && !intent.getStringExtra(SONG_PATH).equals(mSongPath)) {
                 mSongPath = intent.getStringExtra(SONG_PATH);
-//                File file = new File(mSongPath);
-//                FileInputStream fis = new FileInputStream(file);
-//                mMediaPlayer.reset();
-//                mMediaPlayer.setDataSource(fis.getFD());
                 mMediaPlayer.reset();
-                mMediaPlayer.setDataSource(this,Uri.parse(mSongPath));
+                Uri uri = Uri.parse(mSongPath);
+                mMediaPlayer.setDataSource(mSongPath);
+                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 mMediaPlayer.prepareAsync();
-                mMediaPlayer.start();
-
-
-//                mSongPath = intent.getStringExtra(SONG_PATH);
-//                mMediaPlayer.reset();
-//                mMediaPlayer.setDataSource(mSongPath);
-//                mMediaPlayer.prepare();
-//                mMediaPlayer.start();
+                mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        Log.d("TAGTAG", "开始播放");
+                        mp.start();
+                        mDuration = mp.getDuration();
+                    }
+                });
             }
-            mDuration = mMediaPlayer.getDuration();
         } catch (IOException e) {
-            Log.d("TAGTAG", "error:" + e);
+            Log.e("TAGTAG", "error:" + e);
             e.printStackTrace();
         }
         return super.onStartCommand(intent, flags, startId);
@@ -83,7 +81,7 @@ public class MusicPlayService extends Service {
         }
 
         public int getPlayDuration() {
-            return mMediaPlayer.getDuration();
+            return mDuration;
         }
 
         public void setPosToPlay(float pos) {

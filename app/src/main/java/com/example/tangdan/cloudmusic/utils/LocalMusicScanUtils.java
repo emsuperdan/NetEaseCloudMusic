@@ -38,7 +38,7 @@ public class LocalMusicScanUtils {
                     model.setmDuration(duration);
                     model.setmId(id);
                     model.setmSize(size);
-                    model.setmUrl(url);
+                    model.setmLocalMicUrl(url);
                     data.add(model);
                 }
                 cursor.moveToNext();

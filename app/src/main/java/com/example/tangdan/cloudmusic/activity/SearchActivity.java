@@ -18,6 +18,7 @@ import com.example.tangdan.cloudmusic.adapter.SearchListAdapter;
 import com.example.tangdan.cloudmusic.model.BaseModel;
 import com.example.tangdan.cloudmusic.model.ItemModel;
 import com.example.tangdan.cloudmusic.model.MusicModel;
+import com.example.tangdan.cloudmusic.utils.JsonUtils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -35,6 +36,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static com.example.tangdan.cloudmusic.utils.Constants.live_mic_url0;
+import static com.example.tangdan.cloudmusic.utils.Constants.live_mic_url1;
+
 public class SearchActivity extends BaseActivity implements View.OnClickListener {
     private EditText mEditText;
     private String mInputSingerName;
@@ -42,6 +46,7 @@ public class SearchActivity extends BaseActivity implements View.OnClickListener
     private SearchListAdapter mAdapter;
     private ListView mSearchResult;
     private ProgressBar mProgressBar;
+    private MusicModel mSelectedModel;
 
     //用来储存每次搜索的结果List
     private List<BaseModel> mTotalList = new ArrayList<>();
@@ -121,7 +126,8 @@ public class SearchActivity extends BaseActivity implements View.OnClickListener
     }
 
     private void okHttpGetMethod() {
-        final Request request = new Request.Builder().url("https://c.y.qq.com/soso/fcgi-bin/client_search_cp?aggr=1&cr=1&flag_qc=0&p=1&n=5&w=" + mInputSingerName).get().build();
+        //需要及时更新
+        final Request request = new Request.Builder().url("https://c.y.qq.com/soso/fcgi-bin/client_search_cp?p=1&n=5&w=" + mInputSingerName + "&format=json").get().build();
         OkHttpClient client = new OkHttpClient();
         Call call = client.newCall(request);
         call.enqueue(new Callback() {
@@ -142,7 +148,7 @@ public class SearchActivity extends BaseActivity implements View.OnClickListener
                     }
                     String result = baos.toString();
                     //完整的返回数据结果可以通过在浏览器中输入完整连接即可获得
-                    parseJson(result, mTotalList);
+                    JsonUtils.parseJson(result, mTotalList);
 
                     if (mTotalList.size() != 0) {
                         for (int i = 0; i < mTotalList.size(); i++) {
@@ -190,43 +196,5 @@ public class SearchActivity extends BaseActivity implements View.OnClickListener
 
             }
         });
-    }
-
-    private void parseJson(String json, List<BaseModel> list) {
-        try {
-            int len = json.length();
-            String result = json.substring(9, len - 1);
-            JSONObject jsonObject = new JSONObject(result);
-            jsonObject = jsonObject.getJSONObject("data");
-            jsonObject = jsonObject.getJSONObject("song");
-            JSONArray array = jsonObject.getJSONArray("list");
-
-            for (int i = 0; i < array.length(); i++) {
-                MusicModel model = new MusicModel();
-                JSONObject object = array.getJSONObject(i);
-                String albumName = object.optString("albumname");
-                if (!TextUtils.isEmpty(albumName)) {
-                    model.setmAlbum(albumName);
-                }
-                JSONObject singerInnerJson = object.getJSONArray("singer").getJSONObject(0);
-                String singerName = singerInnerJson.optString("name");
-                if (!TextUtils.isEmpty(singerName)) {
-                    model.setmArtist(singerName);
-                }
-                String songName = object.optString("songname");
-                if (!TextUtils.isEmpty(songName)) {
-                    model.setmTitle(songName);
-                }
-
-                String songId = object.optString("songmid");
-                if (!TextUtils.isEmpty(songId)) {
-                    model.setmSongId(songId);
-                }
-
-                list.add(model);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

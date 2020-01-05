@@ -8,19 +8,32 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.example.tangdan.cloudmusic.R;
 import com.example.tangdan.cloudmusic.component.MusicPlayProgressBar;
 import com.example.tangdan.cloudmusic.model.MusicModel;
 import com.example.tangdan.cloudmusic.service.MusicPlayService;
+import com.example.tangdan.cloudmusic.utils.JsonUtils;
 import com.example.tangdan.cloudmusic.utils.PreferenceUtil;
+import com.example.tangdan.cloudmusic.utils.TimeUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import static com.example.tangdan.cloudmusic.utils.Constants.BROADCAST_ACTION;
 import static com.example.tangdan.cloudmusic.utils.Constants.BROADCAST_ACTION_KEY;
@@ -28,12 +41,15 @@ import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SON
 import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SONG_NAME_KEY;
 import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SONG_PATH_ISPLAYING_KEY;
 import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SONG_PATH_KEY;
+import static com.example.tangdan.cloudmusic.utils.Constants.live_mic_url0;
+import static com.example.tangdan.cloudmusic.utils.Constants.live_mic_url1;
 
 public class MusicPlayActivity extends BaseActivity implements View.OnClickListener, MusicPlayProgressBar.ProgressBarListener {
     private static final String SONG_PATH = "SONG_PATH";
 
     private MusicPlayProgressBar mMusicPlayProgressBar;
     private Button mPlayButton, mLastButton, mNextButton;
+    private TextView mCurPlayTime, mTotalPlayTime;
 
     private MusicModel mModel;
     private Bundle mBundle;
@@ -51,7 +67,11 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 0X00:
-                    mMusicPlayProgressBar.setProgress((float) mPlayService.getPlayPos() / mPlayService.getPlayDuration());
+                    if (mPlayService.getPlayDuration() != 0) {
+                        mMusicPlayProgressBar.setProgress((float) mPlayService.getPlayPos() / mPlayService.getPlayDuration());
+                        mCurPlayTime.setText(TimeUtils.secToTime(mPlayService.getPlayPos()));
+                        mTotalPlayTime.setText(TimeUtils.secToTime(mPlayService.getPlayDuration()));
+                    }
                     break;
                 default:
                     break;
@@ -74,6 +94,9 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mPlayButton = (Button) findViewById(R.id.btn_stoporplay);
         mLastButton = (Button) findViewById(R.id.btn_nextsong);
         mNextButton = (Button) findViewById(R.id.btn_lastsong);
+        mCurPlayTime = findViewById(R.id.tv_play_curtime);
+        mTotalPlayTime = findViewById(R.id.tv_play_totaltime);
+
         mPlayButton.setOnClickListener(this);
         mLastButton.setOnClickListener(this);
         mNextButton.setOnClickListener(this);
@@ -82,30 +105,66 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         songIntent = new Intent();
         songIntent.setAction(BROADCAST_ACTION);
         mConnection = new MyConnection();
-        Intent intent = new Intent(this, MusicPlayService.class);
 
         mBundle = getIntent().getExtras();
         if (mBundle != null) {
             mModel = (MusicModel) mBundle.getSerializable("musicmodel");
             mSongName = TextUtils.isEmpty(mModel.getmTitle()) ? "哈哈哈为空" : mModel.getmTitle();
-            mSongPath = "http://ws.stream.qqmusic.qq.com/C1000039MnYb0qxYhV.m4a?fromtag=0&guid=126548448";
-            intent.putExtra(SONG_PATH, mSongPath);
-            startService(intent);
-            bindService(intent, mConnection, BIND_AUTO_CREATE);
-            MyThread thread = new MyThread();
-            thread.start();
+            okhttpGetWithLivemic();
+
         } else {
             mSongPathList = getSongPathListFromSp();
             mSongNameList = getSongNameListFromSp();
             mSongName = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY);
             mSongPath = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_PATH_ISPLAYING_KEY);
+            Intent intent = new Intent(this, MusicPlayService.class);
             intent.putExtra(SONG_PATH, mSongPath);
             startService(intent);
             bindService(intent, mConnection, BIND_AUTO_CREATE);
             MyThread thread = new MyThread();
             thread.start();
         }
+    }
 
+    private MusicModel okhttpGetWithLivemic() {
+        if (mModel == null && mModel.getmSongId().equals("")) {
+            return mModel;
+        }
+        //需要及时更新
+        final Request request = new Request.Builder().url(live_mic_url0 + mModel.getmSongId() + live_mic_url1).get().build();
+        OkHttpClient client = new OkHttpClient();
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.d("TAGTAG", "error" + e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    InputStream inputStream = response.body().byteStream();
+                    byte[] B = new byte[4096];
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    int length;
+                    while ((length = inputStream.read(B)) > 0) {
+                        baos.write(B, 0, length);
+                    }
+
+                    String url = JsonUtils.parsePlayUrl(baos.toString());
+                    mModel.setmLiveMicUrl(url);
+                    mSongPath = url;
+                    Intent intent = new Intent(MusicPlayActivity.this, MusicPlayService.class);
+                    intent.putExtra(SONG_PATH, mSongPath);
+                    startService(intent);
+                    bindService(intent, mConnection, BIND_AUTO_CREATE);
+                    MyThread thread = new MyThread();
+                    thread.start();
+                }
+            }
+        });
+        return mModel;
     }
 
     public ArrayList<String> getSongPathListFromSp() {
@@ -161,6 +220,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     @Override
     public void jumpPosToPlay(float pos) {
         mPlayService.setPosToPlay(pos);
+        mHandler.sendEmptyMessage(0x00);
     }
 
     @Override

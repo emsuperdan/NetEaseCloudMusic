@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -68,6 +69,7 @@ public class MusicPlayProgressBar extends View {
         canvas.drawRect(0, (float) (progressHeight / 2 - 3.5), progressWidth,
                 (float) (progressHeight / 2 + 3.5), mPaint);
 
+        Log.d("TAGTAG","value:+"+getProgress());
         canvas.drawCircle((float) (7.5 + getProgress() * (progressWidth - 7.5)), progressHeight / 2,
                 (float) 7.5, mThumbPaint);
     }

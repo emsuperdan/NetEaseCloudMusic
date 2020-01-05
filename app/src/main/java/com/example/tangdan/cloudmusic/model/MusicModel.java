@@ -10,10 +10,12 @@ public class MusicModel implements BaseModel,Serializable {
     private long mId;
     private long mSize;
     private long mDuration;
-    private String mUrl;
+    private String mLocalMicUrl;
+    private String mLiveMicUrl;
     private String mAlbum;
     private long mAlbumId;
     private String mSongId;
+    private boolean mIsLocalMic;
 
     public String getmTitle() {
         return mTitle;
@@ -39,12 +41,12 @@ public class MusicModel implements BaseModel,Serializable {
         this.mId = mId;
     }
 
-    public String getmUrl() {
-        return mUrl;
+    public String getmLocalMicUrl() {
+        return mLocalMicUrl;
     }
 
-    public void setmUrl(String mUrl) {
-        this.mUrl = mUrl;
+    public void setmLocalMicUrl(String mLocalMicUrl) {
+        this.mLocalMicUrl = mLocalMicUrl;
     }
 
     public long getmSize() {
@@ -90,5 +92,21 @@ public class MusicModel implements BaseModel,Serializable {
 
     public void setmSongId(String mSongId) {
         this.mSongId = mSongId;
+    }
+
+    public boolean ismIsLocalMic() {
+        return mIsLocalMic;
+    }
+
+    public void setmIsLocalMic(boolean mIsLocalMic) {
+        this.mIsLocalMic = mIsLocalMic;
+    }
+
+    public String getmLiveMicUrl() {
+        return mLiveMicUrl;
+    }
+
+    public void setmLiveMicUrl(String mLiveMicUrl) {
+        this.mLiveMicUrl = mLiveMicUrl;
     }
 }

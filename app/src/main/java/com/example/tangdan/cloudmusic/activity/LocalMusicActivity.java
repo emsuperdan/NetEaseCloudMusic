@@ -77,7 +77,7 @@ public class LocalMusicActivity extends BaseActivity implements AdapterView.OnIt
         mSongpathList.clear();
         mSongNameList.clear();
         for (int i = 0; i < mList.size(); i++) {
-            mSongpathList.add(mList.get(i).getmUrl());
+            mSongpathList.add(mList.get(i).getmLocalMicUrl());
             mSongNameList.add(mList.get(i).getmTitle());
         }
 
@@ -107,7 +107,7 @@ public class LocalMusicActivity extends BaseActivity implements AdapterView.OnIt
         if (model == null) {
             return;
         }
-        String path = model.getmUrl();
+        String path = model.getmLocalMicUrl();
         String name = model.getmTitle();
 
         Intent intent = new Intent(this, MusicPlayActivity.class);

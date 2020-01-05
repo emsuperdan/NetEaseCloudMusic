@@ -4,11 +4,15 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -19,6 +23,7 @@ import com.example.tangdan.cloudmusic.component.FragmentIndicatorView;
 import com.example.tangdan.cloudmusic.present.BasePresenter;
 import com.example.tangdan.cloudmusic.utils.PreferenceUtil;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
