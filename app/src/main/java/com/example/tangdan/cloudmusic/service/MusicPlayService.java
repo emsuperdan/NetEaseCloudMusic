@@ -44,14 +44,12 @@ public class MusicPlayService extends Service {
             if (intent != null && intent.getStringExtra(SONG_PATH) != null && !intent.getStringExtra(SONG_PATH).equals(mSongPath)) {
                 mSongPath = intent.getStringExtra(SONG_PATH);
                 mMediaPlayer.reset();
-                Uri uri = Uri.parse(mSongPath);
-                mMediaPlayer.setDataSource(mSongPath);
+                mMediaPlayer.setDataSource(this,Uri.parse(mSongPath));
                 mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 mMediaPlayer.prepareAsync();
                 mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
                     public void onPrepared(MediaPlayer mp) {
-                        Log.d("TAGTAG", "开始播放");
                         mp.start();
                         mDuration = mp.getDuration();
                     }
