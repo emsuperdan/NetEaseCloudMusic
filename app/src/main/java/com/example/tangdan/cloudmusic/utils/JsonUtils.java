@@ -26,6 +26,10 @@ public class JsonUtils {
                 if (!TextUtils.isEmpty(albumName)) {
                     model.setmAlbum(albumName);
                 }
+                String albumPicUrl = object.optString("albummid");
+                if (!TextUtils.isEmpty(albumPicUrl)) {
+                    model.setAlbumPicUrl(albumPicUrl);
+                }
                 JSONObject singerInnerJson = object.getJSONArray("singer").getJSONObject(0);
                 String singerName = singerInnerJson.optString("name");
                 if (!TextUtils.isEmpty(singerName)) {

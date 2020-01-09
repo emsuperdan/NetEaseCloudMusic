@@ -4,10 +4,17 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="400dp"
-        android:background="@color/red"></LinearLayout>
+        android:background="@color/red">
+        <ImageView
+            android:id="@+id/iv_albumimage"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="300dp" />
+
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -11,8 +11,10 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.tangdan.cloudmusic.R;
 import com.example.tangdan.cloudmusic.component.MusicPlayProgressBar;
 import com.example.tangdan.cloudmusic.model.MusicModel;
@@ -41,6 +43,8 @@ import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SON
 import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SONG_NAME_KEY;
 import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SONG_PATH_ISPLAYING_KEY;
 import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SONG_PATH_KEY;
+import static com.example.tangdan.cloudmusic.utils.Constants.album_pic_url0;
+import static com.example.tangdan.cloudmusic.utils.Constants.album_pic_url1;
 import static com.example.tangdan.cloudmusic.utils.Constants.live_mic_url0;
 import static com.example.tangdan.cloudmusic.utils.Constants.live_mic_url1;
 
@@ -50,6 +54,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     private MusicPlayProgressBar mMusicPlayProgressBar;
     private Button mPlayButton, mLastButton, mNextButton;
     private TextView mCurPlayTime, mTotalPlayTime;
+    private ImageView mAlbumImage;
 
     private MusicModel mModel;
     private Bundle mBundle;
@@ -94,6 +99,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mPlayButton = (Button) findViewById(R.id.btn_stoporplay);
         mLastButton = (Button) findViewById(R.id.btn_nextsong);
         mNextButton = (Button) findViewById(R.id.btn_lastsong);
+        mAlbumImage = findViewById(R.id.iv_albumimage);
         mCurPlayTime = findViewById(R.id.tv_play_curtime);
         mTotalPlayTime = findViewById(R.id.tv_play_totaltime);
 
@@ -111,11 +117,13 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
             mModel = (MusicModel) mBundle.getSerializable("musicmodel");
             mSongName = TextUtils.isEmpty(mModel.getmTitle()) ? "哈哈哈为空" : mModel.getmTitle();
             okhttpGetWithLivemic();
-
+            if (!mModel.getAlbumPicUrl().equals("")) {
+                Glide.with(this).load(album_pic_url0 + mModel.getAlbumPicUrl() + album_pic_url1).into(mAlbumImage);
+            }
         } else {
             mSongPathList = getSongPathListFromSp();
             mSongNameList = getSongNameListFromSp();
-            mSongName = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY);
+            mSongNlame = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY);
             mSongPath = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_PATH_ISPLAYING_KEY);
             Intent intent = new Intent(this, MusicPlayService.class);
             intent.putExtra(SONG_PATH, mSongPath);

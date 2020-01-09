@@ -16,6 +16,7 @@ public class MusicModel implements BaseModel,Serializable {
     private long mAlbumId;
     private String mSongId;
     private boolean mIsLocalMic;
+    private String mAlbumPicUrl;
 
     public String getmTitle() {
         return mTitle;
@@ -108,5 +109,13 @@ public class MusicModel implements BaseModel,Serializable {
 
     public void setmLiveMicUrl(String mLiveMicUrl) {
         this.mLiveMicUrl = mLiveMicUrl;
+    }
+
+    public String getAlbumPicUrl() {
+        return mAlbumPicUrl;
+    }
+
+    public void setAlbumPicUrl(String mAlbumPicUrl) {
+        this.mAlbumPicUrl = mAlbumPicUrl;
     }
 }
