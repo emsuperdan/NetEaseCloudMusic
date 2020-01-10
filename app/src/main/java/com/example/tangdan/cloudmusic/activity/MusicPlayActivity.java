@@ -123,7 +123,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         } else {
             mSongPathList = getSongPathListFromSp();
             mSongNameList = getSongNameListFromSp();
-            mSongNlame = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY);
+            mSongName = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_NAME_ISPLAYING_KEY);
             mSongPath = mPreferenceUtil.getPreferenceString(PREF_PREFERENCE_SONG_PATH_ISPLAYING_KEY);
             Intent intent = new Intent(this, MusicPlayService.class);
             intent.putExtra(SONG_PATH, mSongPath);

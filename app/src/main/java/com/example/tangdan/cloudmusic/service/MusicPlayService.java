@@ -44,7 +44,7 @@ public class MusicPlayService extends Service {
             if (intent != null && intent.getStringExtra(SONG_PATH) != null && !intent.getStringExtra(SONG_PATH).equals(mSongPath)) {
                 mSongPath = intent.getStringExtra(SONG_PATH);
                 mMediaPlayer.reset();
-                mMediaPlayer.setDataSource(this,Uri.parse(mSongPath));
+                mMediaPlayer.setDataSource(mSongPath);
                 mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 mMediaPlayer.prepareAsync();
                 mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
