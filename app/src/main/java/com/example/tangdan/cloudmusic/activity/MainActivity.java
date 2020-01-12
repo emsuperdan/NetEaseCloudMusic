@@ -130,7 +130,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 switchFragment(2);
                 break;
             case R.id.tv_main_activity_search:
-                Intent intent = new Intent(this, SearchActivity.class);
+                Intent intent = new Intent(this, ViewActiity.class);
                 startActivity(intent);
                 break;
             default:

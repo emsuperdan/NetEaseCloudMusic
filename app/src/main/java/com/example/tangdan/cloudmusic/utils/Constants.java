@@ -7,6 +7,10 @@ public class Constants {
     public static final String album_pic_url0 = "https://y.gtimg.cn/music/photo_new/T002R180x180M000";
     public static final String album_pic_url1 = ".jpg";
 
+    public static final String mic_search_address0 = "https://c.y.qq.com/soso/fcgi-bin/client_search_cp?p=1&n=";
+    public static final String mic_search_address1 = "&w=";
+    public static final String mic_search_address2 = "&format=json";
+
     public static final String BROADCAST_ACTION_KEY = "broadcast_action_song_path_key";
     public static final String BROADCAST_ACTION = "broadcast_action_song_path";
 
