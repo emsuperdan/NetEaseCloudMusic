@@ -24,11 +24,12 @@
         <activity
             android:name=".activity.LocalMusicActivity"
             android:launchMode="singleTask"></activity>
-        <activity android:name=".activity.MusicPlayActivity"></activity>
+        <activity
+            android:name=".activity.MusicPlayActivity"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"></activity>
         <service android:name=".service.MusicPlayService"></service>
         <activity android:name=".activity.SearchActivity">
         </activity>
-        <activity android:name=".activity.ViewActiity"/>
     </application>
 
 </manifest>

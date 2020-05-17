@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.tangdan.cloudmusic.R;
 import com.example.tangdan.cloudmusic.component.MusicPlayProgressBar;
+import com.example.tangdan.cloudmusic.customwidget.RotatingAlbum;
 import com.example.tangdan.cloudmusic.model.MusicModel;
 import com.example.tangdan.cloudmusic.service.MusicPlayService;
 import com.example.tangdan.cloudmusic.utils.JsonUtils;
@@ -54,7 +55,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     private MusicPlayProgressBar mMusicPlayProgressBar;
     private Button mPlayButton, mLastButton, mNextButton;
     private TextView mCurPlayTime, mTotalPlayTime;
-    private ImageView mAlbumImage;
+    private RotatingAlbum mAlbumImage;
 
     private MusicModel mModel;
     private Bundle mBundle;
@@ -99,7 +100,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mPlayButton = (Button) findViewById(R.id.btn_stoporplay);
         mLastButton = (Button) findViewById(R.id.btn_nextsong);
         mNextButton = (Button) findViewById(R.id.btn_lastsong);
-        mAlbumImage = findViewById(R.id.iv_albumimage);
+        mAlbumImage = (RotatingAlbum) findViewById(R.id.iv_albumimage);
         mCurPlayTime = findViewById(R.id.tv_play_curtime);
         mTotalPlayTime = findViewById(R.id.tv_play_totaltime);
 
@@ -117,9 +118,9 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
             mModel = (MusicModel) mBundle.getSerializable("musicmodel");
             mSongName = TextUtils.isEmpty(mModel.getmTitle()) ? "哈哈哈为空" : mModel.getmTitle();
             okhttpGetWithLivemic();
-            if (!mModel.getAlbumPicUrl().equals("")) {
-                Glide.with(this).load(album_pic_url0 + mModel.getAlbumPicUrl() + album_pic_url1).into(mAlbumImage);
-            }
+//            if (!mModel.getAlbumPicUrl().equals("")) {
+//                Glide.with(this).load(album_pic_url0 + mModel.getAlbumPicUrl() + album_pic_url1).into(mAlbumImage);
+//            }
         } else {
             mSongPathList = getSongPathListFromSp();
             mSongNameList = getSongNameListFromSp();
