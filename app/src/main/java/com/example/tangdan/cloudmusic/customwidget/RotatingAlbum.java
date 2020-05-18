@@ -1,12 +1,17 @@
 package com.example.tangdan.cloudmusic.customwidget;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.graphics.Xfermode;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -20,6 +25,8 @@ public class RotatingAlbum extends LinearLayout {
     private ImageView mImage;
     private Paint mPaint;
     private float mRadius;
+    private Drawable mDraw;
+    private float percent;
 
     public RotatingAlbum(Context context) {
         this(context, null);
@@ -38,8 +45,10 @@ public class RotatingAlbum extends LinearLayout {
 
         mPaint = new Paint();
         mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setColor(mContext.getResources().getColor(R.color.yellow));
-        mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        mPaint.setAntiAlias(true);
+        mPaint.setColor(getResources().getColor(R.color.red));
+
+        mDraw = getResources().getDrawable(R.drawable.login_icon);
 
         initParams();
         setWillNotDraw(false);
@@ -55,18 +64,36 @@ public class RotatingAlbum extends LinearLayout {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        canvas.drawCircle(mRadius, mRadius, mRadius, mPaint);
+        Log.d("TAGTAG", "view percent" + percent);
+
+        Bitmap bitmap = ((BitmapDrawable) (mDraw)).getBitmap();
+        Bitmap b = getCircleBitmap(bitmap);
+
+        Rect rectDest = new Rect(0,0,getWidth(),getHeight());
+        canvas.drawBitmap(b,null,rectDest,null);
+        mPaint.reset();
+    }
+
+    private Bitmap getCircleBitmap(Bitmap bitmap){
+        Bitmap outPut = Bitmap.createBitmap(bitmap.getWidth(),bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(outPut);
+        canvas.rotate(percent);
+
+        Rect rect = new Rect(0,0,bitmap.getWidth(),bitmap.getHeight());
+        canvas.drawARGB(0,0,0,0);
+        int x = bitmap.getWidth();
+
+        canvas.drawCircle(x/2,x/2,x/2,mPaint);
+        mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap,rect,rect,mPaint);
+        return outPut;
+    }
+
+    public void setRotatePer(float per){
+        this.percent = per;
     }
 
     private void initParams(){
 
-    }
-
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-
-        mImage = (ImageView) findViewById(R.id.rotate_album);
-        mImage.setImageResource(mResId);
     }
 }

@@ -114,6 +114,25 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mConnection = new MyConnection();
 
         mBundle = getIntent().getExtras();
+
+        new Thread(){
+            @Override
+            public void run() {
+                float i = 0f;
+                while (i<360){
+                    Log.d("TAGTAG","  "+i);
+                    mAlbumImage.setRotatePer(i);
+                    i+=50f;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    mAlbumImage.postInvalidate();
+                }
+            }
+        }.start();
+
         if (mBundle != null) {
             mModel = (MusicModel) mBundle.getSerializable("musicmodel");
             mSongName = TextUtils.isEmpty(mModel.getmTitle()) ? "哈哈哈为空" : mModel.getmTitle();
