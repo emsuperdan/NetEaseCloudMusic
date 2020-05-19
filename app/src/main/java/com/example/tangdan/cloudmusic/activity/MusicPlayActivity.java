@@ -1,5 +1,6 @@
 package com.example.tangdan.cloudmusic.activity;
 
+import android.animation.ValueAnimator;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -67,13 +68,14 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     private MyConnection mConnection;
     private MusicPlayService.MyBinder mPlayService;
     private Intent songIntent;
+    private ValueAnimator mRotateAnimator;
 
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 0X00:
-                    if (mPlayService.getPlayDuration() != 0) {
+                    if (mPlayService != null && mPlayService.getPlayDuration() != 0) {
                         mMusicPlayProgressBar.setProgress((float) mPlayService.getPlayPos() / mPlayService.getPlayDuration());
                         mCurPlayTime.setText(TimeUtils.secToTime(mPlayService.getPlayPos()));
                         mTotalPlayTime.setText(TimeUtils.secToTime(mPlayService.getPlayDuration()));
@@ -115,24 +117,6 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
 
         mBundle = getIntent().getExtras();
 
-        new Thread(){
-            @Override
-            public void run() {
-                float i = 0f;
-                while (i<360){
-                    Log.d("TAGTAG","  "+i);
-                    mAlbumImage.setRotatePer(i);
-                    i+=50f;
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    mAlbumImage.postInvalidate();
-                }
-            }
-        }.start();
-
         if (mBundle != null) {
             mModel = (MusicModel) mBundle.getSerializable("musicmodel");
             mSongName = TextUtils.isEmpty(mModel.getmTitle()) ? "哈哈哈为空" : mModel.getmTitle();
@@ -151,6 +135,20 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
             bindService(intent, mConnection, BIND_AUTO_CREATE);
             MyThread thread = new MyThread();
             thread.start();
+
+            mRotateAnimator = ValueAnimator.ofFloat(0,360f);
+            mRotateAnimator.setDuration(60000);
+            mRotateAnimator.setRepeatCount(-1);
+            mRotateAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    float value = (float) animation.getAnimatedValue();
+                    Log.d("TAGTAG","  "+value);
+                    mAlbumImage.setRotatePer(value);
+                    mAlbumImage.invalidate();
+                }
+            });
+            mRotateAnimator.start();
         }
     }
 
@@ -257,6 +255,15 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
             case R.id.btn_stoporplay:
                 boolean flag = mPlayService.isPlaying();
                 mPlayService.setPlay(!flag);
+
+                if (!flag){
+                    mRotateAnimator.resume();
+                }else {
+                    if (mRotateAnimator!=null){
+                        mRotateAnimator.pause();
+                    }
+                }
+
                 break;
             case R.id.btn_lastsong:
                 int pos = 0;

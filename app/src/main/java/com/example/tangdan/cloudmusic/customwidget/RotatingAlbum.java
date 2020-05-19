@@ -24,7 +24,6 @@ public class RotatingAlbum extends LinearLayout {
     private int mResId;
     private ImageView mImage;
     private Paint mPaint;
-    private float mRadius;
     private Drawable mDraw;
     private float percent;
 
@@ -41,13 +40,10 @@ public class RotatingAlbum extends LinearLayout {
         this.mContext = context;
 
         this.mResId = R.drawable.login_icon;
-        mRadius = mContext.getResources().getDimension(R.dimen.circle_radius);
-
         mPaint = new Paint();
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setAntiAlias(true);
         mPaint.setColor(getResources().getColor(R.color.red));
-
         mDraw = getResources().getDrawable(R.drawable.login_icon);
 
         initParams();
@@ -64,8 +60,6 @@ public class RotatingAlbum extends LinearLayout {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        Log.d("TAGTAG", "view percent" + percent);
-
         Bitmap bitmap = ((BitmapDrawable) (mDraw)).getBitmap();
         Bitmap b = getCircleBitmap(bitmap);
 
@@ -77,13 +71,13 @@ public class RotatingAlbum extends LinearLayout {
     private Bitmap getCircleBitmap(Bitmap bitmap){
         Bitmap outPut = Bitmap.createBitmap(bitmap.getWidth(),bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(outPut);
-        canvas.rotate(percent);
 
         Rect rect = new Rect(0,0,bitmap.getWidth(),bitmap.getHeight());
         canvas.drawARGB(0,0,0,0);
         int x = bitmap.getWidth();
 
         canvas.drawCircle(x/2,x/2,x/2,mPaint);
+        canvas.rotate(percent, x / 2, x / 2);
         mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         canvas.drawBitmap(bitmap,rect,rect,mPaint);
         return outPut;
