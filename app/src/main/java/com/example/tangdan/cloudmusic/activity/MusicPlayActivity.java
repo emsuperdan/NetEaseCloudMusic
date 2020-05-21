@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.tangdan.cloudmusic.R;
 import com.example.tangdan.cloudmusic.component.MusicPlayProgressBar;
+import com.example.tangdan.cloudmusic.customwidget.LryView;
 import com.example.tangdan.cloudmusic.customwidget.RotatingAlbum;
 import com.example.tangdan.cloudmusic.model.MusicModel;
 import com.example.tangdan.cloudmusic.service.MusicPlayService;
@@ -56,7 +57,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     private MusicPlayProgressBar mMusicPlayProgressBar;
     private Button mPlayButton, mLastButton, mNextButton;
     private TextView mCurPlayTime, mTotalPlayTime;
-    private RotatingAlbum mAlbumImage;
+    private LryView mAlbumImage;
 
     private MusicModel mModel;
     private Bundle mBundle;
@@ -102,7 +103,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mPlayButton = (Button) findViewById(R.id.btn_stoporplay);
         mLastButton = (Button) findViewById(R.id.btn_nextsong);
         mNextButton = (Button) findViewById(R.id.btn_lastsong);
-        mAlbumImage = (RotatingAlbum) findViewById(R.id.iv_albumimage);
+        mAlbumImage = (LryView) findViewById(R.id.iv_albumimage);
         mCurPlayTime = findViewById(R.id.tv_play_curtime);
         mTotalPlayTime = findViewById(R.id.tv_play_totaltime);
 
@@ -116,6 +117,13 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mConnection = new MyConnection();
 
         mBundle = getIntent().getExtras();
+
+        mAlbumImage.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                Log.d("TAGTAG", "scrolly" + scrollY + "oldY:" + oldScrollY);
+            }
+        });
 
         if (mBundle != null) {
             mModel = (MusicModel) mBundle.getSerializable("musicmodel");
@@ -136,19 +144,19 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
             MyThread thread = new MyThread();
             thread.start();
 
-            mRotateAnimator = ValueAnimator.ofFloat(0,360f);
-            mRotateAnimator.setDuration(60000);
-            mRotateAnimator.setRepeatCount(-1);
-            mRotateAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    float value = (float) animation.getAnimatedValue();
-                    Log.d("TAGTAG","  "+value);
-                    mAlbumImage.setRotatePer(value);
-                    mAlbumImage.invalidate();
-                }
-            });
-            mRotateAnimator.start();
+//            mRotateAnimator = ValueAnimator.ofFloat(0,360f);
+//            mRotateAnimator.setDuration(60000);
+//            mRotateAnimator.setRepeatCount(-1);
+//            mRotateAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//                @Override
+//                public void onAnimationUpdate(ValueAnimator animation) {
+//                    float value = (float) animation.getAnimatedValue();
+//                    Log.d("TAGTAG","  "+value);
+//                    mAlbumImage.setRotatePer(value);
+//                    mAlbumImage.invalidate();
+//                }
+//            });
+//            mRotateAnimator.start();
         }
     }
 
@@ -256,13 +264,13 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
                 boolean flag = mPlayService.isPlaying();
                 mPlayService.setPlay(!flag);
 
-                if (!flag){
-                    mRotateAnimator.resume();
-                }else {
-                    if (mRotateAnimator!=null){
-                        mRotateAnimator.pause();
-                    }
-                }
+//                if (!flag){
+//                    mRotateAnimator.resume();
+//                }else {
+//                    if (mRotateAnimator!=null){
+//                        mRotateAnimator.pause();
+//                    }
+//                }
 
                 break;
             case R.id.btn_lastsong:

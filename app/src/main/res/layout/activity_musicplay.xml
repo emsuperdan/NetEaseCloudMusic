@@ -8,12 +8,13 @@
         android:layout_width="match_parent"
         android:layout_height="400dp"
         android:background="@color/red">
-        <com.example.tangdan.cloudmusic.customwidget.RotatingAlbum
+        <com.example.tangdan.cloudmusic.customwidget.LryView
             android:id="@+id/iv_albumimage"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
+            android:layout_width="50dp"
+            android:layout_height="150dp"
+            android:scrollbars="none"
             android:layout_centerInParent="true">
-        </com.example.tangdan.cloudmusic.customwidget.RotatingAlbum>
+        </com.example.tangdan.cloudmusic.customwidget.LryView>
 
     </RelativeLayout>
 
