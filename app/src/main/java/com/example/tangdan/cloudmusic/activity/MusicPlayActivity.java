@@ -12,14 +12,11 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.example.tangdan.cloudmusic.R;
 import com.example.tangdan.cloudmusic.component.MusicPlayProgressBar;
-import com.example.tangdan.cloudmusic.customwidget.LryView;
-import com.example.tangdan.cloudmusic.customwidget.RotatingAlbum;
+import com.example.tangdan.cloudmusic.customwidget.LryScrollView;
 import com.example.tangdan.cloudmusic.model.MusicModel;
 import com.example.tangdan.cloudmusic.service.MusicPlayService;
 import com.example.tangdan.cloudmusic.utils.JsonUtils;
@@ -46,8 +43,6 @@ import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SON
 import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SONG_NAME_KEY;
 import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SONG_PATH_ISPLAYING_KEY;
 import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SONG_PATH_KEY;
-import static com.example.tangdan.cloudmusic.utils.Constants.album_pic_url0;
-import static com.example.tangdan.cloudmusic.utils.Constants.album_pic_url1;
 import static com.example.tangdan.cloudmusic.utils.Constants.live_mic_url0;
 import static com.example.tangdan.cloudmusic.utils.Constants.live_mic_url1;
 
@@ -57,7 +52,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     private MusicPlayProgressBar mMusicPlayProgressBar;
     private Button mPlayButton, mLastButton, mNextButton;
     private TextView mCurPlayTime, mTotalPlayTime;
-    private LryView mAlbumImage;
+    private LryScrollView mAlbumImage;
 
     private MusicModel mModel;
     private Bundle mBundle;
@@ -103,7 +98,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mPlayButton = (Button) findViewById(R.id.btn_stoporplay);
         mLastButton = (Button) findViewById(R.id.btn_nextsong);
         mNextButton = (Button) findViewById(R.id.btn_lastsong);
-        mAlbumImage = (LryView) findViewById(R.id.iv_albumimage);
+        mAlbumImage = (LryScrollView) findViewById(R.id.iv_albumimage);
         mCurPlayTime = findViewById(R.id.tv_play_curtime);
         mTotalPlayTime = findViewById(R.id.tv_play_totaltime);
 

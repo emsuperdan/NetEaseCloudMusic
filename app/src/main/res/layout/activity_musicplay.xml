@@ -8,13 +8,21 @@
         android:layout_width="match_parent"
         android:layout_height="400dp"
         android:background="@color/red">
-        <com.example.tangdan.cloudmusic.customwidget.LryView
+        <com.example.tangdan.cloudmusic.customwidget.LryScrollView
             android:id="@+id/iv_albumimage"
-            android:layout_width="50dp"
-            android:layout_height="150dp"
+            android:layout_width="250dp"
+            android:layout_height="300dp"
             android:scrollbars="none"
             android:layout_centerInParent="true">
-        </com.example.tangdan.cloudmusic.customwidget.LryView>
+
+            <com.example.tangdan.cloudmusic.customwidget.LryTextView
+                android:id="@+id/tx_lyric"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:background="@color/cadetblue"
+                android:layout_height="wrap_content"
+                android:text="塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n" />
+        </com.example.tangdan.cloudmusic.customwidget.LryScrollView>
 
     </RelativeLayout>
 
