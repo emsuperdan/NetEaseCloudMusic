@@ -31,7 +31,6 @@ public class LryTextView extends TextView {
         mCenterLinePaint.setStrokeWidth(20);
 
         initParams();
-        setWillNotDraw(false);
     }
 
     private void initParams() {
@@ -41,7 +40,6 @@ public class LryTextView extends TextView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getSize(heightMeasureSpec));
         mViewWidth = MeasureSpec.getSize(widthMeasureSpec);
         mViewHeight = MeasureSpec.getSize(heightMeasureSpec);
     }
@@ -50,14 +48,12 @@ public class LryTextView extends TextView {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        canvas.drawRect(0,mViewHeight/2-5,mViewWidth,mViewHeight/2+5,mCenterLinePaint);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
-                Log.d("TAGTAG1","get down envent");
                 break;
         }
         return super.onTouchEvent(event);

@@ -112,14 +112,6 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mConnection = new MyConnection();
 
         mBundle = getIntent().getExtras();
-
-        mAlbumImage.setOnScrollChangeListener(new View.OnScrollChangeListener() {
-            @Override
-            public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                Log.d("TAGTAG", "scrolly" + scrollY + "oldY:" + oldScrollY);
-            }
-        });
-
         if (mBundle != null) {
             mModel = (MusicModel) mBundle.getSerializable("musicmodel");
             mSongName = TextUtils.isEmpty(mModel.getmTitle()) ? "哈哈哈为空" : mModel.getmTitle();

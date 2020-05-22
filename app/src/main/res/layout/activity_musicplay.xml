@@ -18,8 +18,9 @@
             <com.example.tangdan.cloudmusic.customwidget.LryTextView
                 android:id="@+id/tx_lyric"
                 android:gravity="center"
-                android:layout_width="match_parent"
-                android:background="@color/cadetblue"
+                android:layout_gravity="center_horizontal"
+                android:layout_width="200dp"
+                android:background="@color/transparent"
                 android:layout_height="wrap_content"
                 android:text="塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n塔特塔特塔特asdasdasd塔特asdasdasd忐\n" />
         </com.example.tangdan.cloudmusic.customwidget.LryScrollView>
