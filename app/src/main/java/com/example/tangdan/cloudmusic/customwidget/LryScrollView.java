@@ -104,10 +104,9 @@ public class LryScrollView extends ScrollView {
         mRotateAnimator.start();
     }
 
-
     public void setLyricPos(float pos){
         this.pos = pos;
-        scrollTo(0, (int) (mViewHeight * pos / 2));
+//        scrollTo(0, (int) (mViewHeight * pos / 2));
     }
 
     public float getLyricPos(){

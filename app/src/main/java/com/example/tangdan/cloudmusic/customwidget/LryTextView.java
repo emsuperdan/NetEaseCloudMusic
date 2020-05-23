@@ -25,11 +25,6 @@ public class LryTextView extends TextView {
 
     public LryTextView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-
-        mCenterLinePaint = new Paint();
-        mCenterLinePaint.setColor(getResources().getColor(R.color.black));
-        mCenterLinePaint.setStrokeWidth(20);
-
         initParams();
     }
 

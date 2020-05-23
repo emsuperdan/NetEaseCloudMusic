@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.example.tangdan.cloudmusic.R;
 import com.example.tangdan.cloudmusic.component.MusicPlayProgressBar;
 import com.example.tangdan.cloudmusic.customwidget.LryScrollView;
+import com.example.tangdan.cloudmusic.customwidget.NewLyricScrollView;
 import com.example.tangdan.cloudmusic.model.MusicModel;
 import com.example.tangdan.cloudmusic.service.MusicPlayService;
 import com.example.tangdan.cloudmusic.utils.JsonUtils;
@@ -52,7 +53,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     private MusicPlayProgressBar mMusicPlayProgressBar;
     private Button mPlayButton, mLastButton, mNextButton;
     private TextView mCurPlayTime, mTotalPlayTime;
-    private LryScrollView mAlbumImage;
+    private NewLyricScrollView mAlbumImage;
 
     private MusicModel mModel;
     private Bundle mBundle;
@@ -98,7 +99,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mPlayButton = (Button) findViewById(R.id.btn_stoporplay);
         mLastButton = (Button) findViewById(R.id.btn_nextsong);
         mNextButton = (Button) findViewById(R.id.btn_lastsong);
-        mAlbumImage = (LryScrollView) findViewById(R.id.iv_albumimage);
+        mAlbumImage = (NewLyricScrollView) findViewById(R.id.iv_albumimage);
         mCurPlayTime = findViewById(R.id.tv_play_curtime);
         mTotalPlayTime = findViewById(R.id.tv_play_totaltime);
 
@@ -145,6 +146,22 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
 //            });
 //            mRotateAnimator.start();
         }
+
+        new Thread() {
+            @Override
+            public void run() {
+                float y = 320;
+                while (y < 750) {
+                    try {
+                        mAlbumImage.setOffsetY(y);
+                        Thread.sleep(1000);
+                        y += 45;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
     }
 
     private MusicModel okhttpGetWithLivemic() {
