@@ -6,8 +6,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Message;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -16,7 +17,6 @@ import android.widget.TextView;
 
 import com.example.tangdan.cloudmusic.R;
 import com.example.tangdan.cloudmusic.component.MusicPlayProgressBar;
-import com.example.tangdan.cloudmusic.customwidget.LryScrollView;
 import com.example.tangdan.cloudmusic.customwidget.NewLyricScrollView;
 import com.example.tangdan.cloudmusic.model.MusicModel;
 import com.example.tangdan.cloudmusic.service.MusicPlayService;
@@ -67,23 +67,30 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     private Intent songIntent;
     private ValueAnimator mRotateAnimator;
 
-    private Handler mHandler = new Handler() {
+    private HandlerThread mHandlerThread;
+    private Handler mHandler;
+    private Handler mUiHandler;
+
+    private Runnable mPlayProgressRunnable = new Runnable() {
         @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case 0X00:
-                    if (mPlayService != null && mPlayService.getPlayDuration() != 0) {
-                        mMusicPlayProgressBar.setProgress((float) mPlayService.getPlayPos() / mPlayService.getPlayDuration());
-                        mCurPlayTime.setText(TimeUtils.secToTime(mPlayService.getPlayPos()));
-                        mTotalPlayTime.setText(TimeUtils.secToTime(mPlayService.getPlayDuration()));
-                    }
-                    break;
-                default:
-                    break;
+        public void run() {
+            if (mPlayService != null && mPlayService.getPlayDuration() != 0) {
+                mMusicPlayProgressBar.setProgress((float) mPlayService.getPlayPos() / mPlayService.getPlayDuration());
+                mCurPlayTime.setText(TimeUtils.secToTime(mPlayService.getPlayPos()));
+                mTotalPlayTime.setText(TimeUtils.secToTime(mPlayService.getPlayDuration()));
             }
         }
     };
 
+    private Runnable mLyricRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (mPlayService != null && mPlayService.getPlayDuration() != 0) {
+                mAlbumImage.setOffsetY(mAlbumImage.getOffsetY() - mAlbumImage.getLyricSpeed());
+                mAlbumImage.invalidate();
+            }
+        }
+    };
 
     @Override
     protected void onDestroy() {
@@ -95,6 +102,11 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_musicplay);
+        mUiHandler = new Handler(Looper.getMainLooper());
+        mHandlerThread = new HandlerThread(MusicPlayActivity.class.getSimpleName());
+        mHandlerThread.start();
+        mHandler = new Handler(mHandlerThread.getLooper());
+
         mMusicPlayProgressBar = (MusicPlayProgressBar) findViewById(R.id.progress_music_bar);
         mPlayButton = (Button) findViewById(R.id.btn_stoporplay);
         mLastButton = (Button) findViewById(R.id.btn_nextsong);
@@ -129,39 +141,12 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
             intent.putExtra(SONG_PATH, mSongPath);
             startService(intent);
             bindService(intent, mConnection, BIND_AUTO_CREATE);
-            MyThread thread = new MyThread();
+            MyPlayProgressThread thread = new MyPlayProgressThread();
             thread.start();
 
-//            mRotateAnimator = ValueAnimator.ofFloat(0,360f);
-//            mRotateAnimator.setDuration(60000);
-//            mRotateAnimator.setRepeatCount(-1);
-//            mRotateAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//                @Override
-//                public void onAnimationUpdate(ValueAnimator animation) {
-//                    float value = (float) animation.getAnimatedValue();
-//                    Log.d("TAGTAG","  "+value);
-//                    mAlbumImage.setRotatePer(value);
-//                    mAlbumImage.invalidate();
-//                }
-//            });
-//            mRotateAnimator.start();
+            MyLyricThread thread1 = new MyLyricThread();
+            thread1.start();
         }
-
-        new Thread() {
-            @Override
-            public void run() {
-                float y = 320;
-                while (y < 750) {
-                    try {
-                        mAlbumImage.setOffsetY(y);
-                        Thread.sleep(1000);
-                        y += 45;
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.start();
     }
 
     private MusicModel okhttpGetWithLivemic() {
@@ -197,8 +182,11 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
                     intent.putExtra(SONG_PATH, mSongPath);
                     startService(intent);
                     bindService(intent, mConnection, BIND_AUTO_CREATE);
-                    MyThread thread = new MyThread();
+                    MyPlayProgressThread thread = new MyPlayProgressThread();
                     thread.start();
+
+                    MyLyricThread thread1 = new MyLyricThread();
+                    thread1.start();
                 }
             }
         });
@@ -237,14 +225,13 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         return list;
     }
 
-    private class MyThread extends Thread {
-
+    private class MyPlayProgressThread extends Thread {
         @Override
         public void run() {
             super.run();
             while (true) {
                 if (mPlayService != null) {
-                    mHandler.sendEmptyMessage(0x00);
+                    mUiHandler.post(mPlayProgressRunnable);
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -255,10 +242,25 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         }
     }
 
+    private class MyLyricThread extends Thread {
+        @Override
+        public void run() {
+            super.run();
+            while (true) {
+                mUiHandler.post(mLyricRunnable);
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     @Override
     public void jumpPosToPlay(float pos) {
         mPlayService.setPosToPlay(pos);
-        mHandler.sendEmptyMessage(0x00);
+        mUiHandler.post(mPlayProgressRunnable);
     }
 
     @Override
