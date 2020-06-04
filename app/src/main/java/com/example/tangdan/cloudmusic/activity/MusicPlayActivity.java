@@ -4,6 +4,7 @@ import android.animation.ValueAnimator;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 import com.example.tangdan.cloudmusic.R;
 import com.example.tangdan.cloudmusic.component.MusicPlayProgressBar;
 import com.example.tangdan.cloudmusic.customwidget.NewLyricScrollView;
+import com.example.tangdan.cloudmusic.model.LyricObject;
 import com.example.tangdan.cloudmusic.model.MusicModel;
 import com.example.tangdan.cloudmusic.service.MusicPlayService;
 import com.example.tangdan.cloudmusic.utils.JsonUtils;
@@ -27,10 +29,16 @@ import com.example.tangdan.cloudmusic.utils.TimeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.regex.Pattern;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -66,6 +74,9 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     private MusicPlayService.MyBinder mPlayService;
     private Intent songIntent;
     private ValueAnimator mRotateAnimator;
+    private int indexTime = 0;
+    private HashMap<Integer, LyricObject> lyricMap = new HashMap<>();
+    private boolean isLyricReady;
 
     private HandlerThread mHandlerThread;
     private Handler mHandler;
@@ -86,6 +97,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         @Override
         public void run() {
             if (mPlayService != null && mPlayService.getPlayDuration() != 0) {
+                mAlbumImage.setSelectIndex(indexTime);
                 mAlbumImage.setOffsetY(mAlbumImage.getOffsetY() - mAlbumImage.getLyricSpeed());
                 mAlbumImage.invalidate();
             }
@@ -250,6 +262,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
                 mUiHandler.post(mLyricRunnable);
                 try {
                     Thread.sleep(100);
+                    indexTime+=100;
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -336,6 +349,48 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         @Override
         public void onServiceDisconnected(ComponentName name) {
 
+        }
+    }
+
+    class LyricLoadTask extends AsyncTask<Void,Void,Void>{
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            String data = "";
+            try {
+                File file = new File("lyric.txt");
+                if (!file.isFile()) {
+                    return null;
+                }
+
+                FileInputStream stream = new FileInputStream(file);
+                BufferedReader br = new BufferedReader(new InputStreamReader(stream,"GB2312"));
+                Pattern pattern = Pattern.compile("\\d{2}");
+
+                while ((data = br.readLine()) != null) {
+                    Log.d("TAGTAG","--------"+data+"/n");
+                    data = data.replace("[","");
+                    data = data.replace("]","@");
+                    String splitdata[] = data.split("@");
+                    //歌词中不算时间的部分
+                    if (data.endsWith("@")){
+                        for (int i = 0;i<splitdata.length;i++){
+                            String str = splitdata[i];
+                            str = str.replace()
+                        }
+                    }
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            isLyricReady = true;
         }
     }
 }

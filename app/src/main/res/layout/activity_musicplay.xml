@@ -6,13 +6,16 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="400dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:background="@color/red">
         <com.example.tangdan.cloudmusic.customwidget.NewLyricScrollView
             android:id="@+id/iv_albumimage"
-            android:layout_width="250dp"
-            android:layout_height="300dp"
+            android:layout_width="350dp"
+            android:layout_height="550dp"
+            android:layout_marginBottom="30dp"
             android:scrollbars="none"
+            android:layout_alignParentBottom="true"
             android:layout_centerInParent="true">
 
      </com.example.tangdan.cloudmusic.customwidget.NewLyricScrollView>
@@ -21,7 +24,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:background="@color/yellow"
         android:gravity="center"
         android:orientation="vertical">
@@ -29,6 +32,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:orientation="horizontal">
 
             <TextView

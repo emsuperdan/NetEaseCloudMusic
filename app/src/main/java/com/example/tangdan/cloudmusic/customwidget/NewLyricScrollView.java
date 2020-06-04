@@ -19,11 +19,11 @@ public class NewLyricScrollView extends View {
     private float lyricHeight;
     private float mOffsetY;//用作歌词滚动偏移;
     private float Y = 0;//计算跟手移动Y距离
-    private final int INTERVAL=45;//歌词每行的间隔
+    private final int INTERVAL=80;//歌词每行的间隔
     Paint paint=new Paint();//画笔，用于画不是高亮的歌词
     Paint paintHL=new Paint();//画笔，用于画高亮的歌词，即当前唱到这句歌词
     private Map<Integer, LyricObject> mLyricMap = new HashMap<>();
-    private int hlLineNumber = 2;
+    private int hlLineIndex = 0;
 
     public NewLyricScrollView(Context context) {
         super(context);
@@ -45,12 +45,14 @@ public class NewLyricScrollView extends View {
         paint.setAntiAlias(true);
         paint.setDither(true);
         paint.setAlpha(180);
+        paint.setTextSize(32);
 
         paintHL=new Paint();
         paintHL.setTextAlign(Paint.Align.CENTER);
         paintHL.setColor(Color.RED);
         paintHL.setAntiAlias(true);
         paintHL.setAlpha(255);
+        paintHL.setTextSize(35);
 
         setData(null);
     }
@@ -58,12 +60,12 @@ public class NewLyricScrollView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawText(mLyricMap.get(hlLineNumber).getLyric(), mCenterX, mOffsetY + INTERVAL * (hlLineNumber + 1), paintHL);
+        canvas.drawText(mLyricMap.get(hlLineIndex).getLyric(), mCenterX, mOffsetY + INTERVAL * (hlLineIndex + 1), paintHL);
 
-        for (int i = 0;i<hlLineNumber;i++){
+        for (int i = 0; i< hlLineIndex; i++){
             canvas.drawText(mLyricMap.get(i).getLyric(), mCenterX, mOffsetY+(INTERVAL)*(i+1), paint);
         }
-        for (int i = hlLineNumber+1;i<mLyricMap.size();i++){
+        for (int i = hlLineIndex +1; i<mLyricMap.size(); i++){
             canvas.drawText(mLyricMap.get(i).getLyric(), mCenterX, mOffsetY+(INTERVAL)*(i+1), paint);
         }
     }
@@ -95,7 +97,7 @@ public class NewLyricScrollView extends View {
     }
 
     public float getLyricSpeed(){
-        float speed = 0.5f;
+        float speed = 1f;
         return speed;
     }
 
@@ -105,6 +107,16 @@ public class NewLyricScrollView extends View {
 
     public float getOffsetY(){
         return mOffsetY;
+    }
+
+    public void setSelectIndex(int currentTime){
+        int index = 0;
+        for (int i=0;i<mLyricMap.size();i++){
+            LyricObject temp = mLyricMap.get(i);
+            if (temp.getBeginTime()<currentTime/1000){
+                hlLineIndex = index++;
+            }
+        }
     }
 
     public void setData(Map<Integer, LyricObject> map){
@@ -138,10 +150,24 @@ public class NewLyricScrollView extends View {
         object4.setEndTime(25);
         object4.setTiming(5);
 
+        LyricObject object5 = new LyricObject();
+        object5.setLyric("这是第一行歌词");
+        object5.setBeginTime(26);
+        object5.setEndTime(30);
+        object5.setTiming(5);
+
+        LyricObject object6 = new LyricObject();
+        object6.setLyric("这是第一行歌词");
+        object6.setBeginTime(31);
+        object6.setEndTime(35);
+        object6.setTiming(5);
+
         mLyricMap.put(0,object);
         mLyricMap.put(1,object1);
         mLyricMap.put(2,object2);
         mLyricMap.put(3,object3);
         mLyricMap.put(4,object4);
+        mLyricMap.put(5,object5);
+        mLyricMap.put(6,object6);
     }
 }
