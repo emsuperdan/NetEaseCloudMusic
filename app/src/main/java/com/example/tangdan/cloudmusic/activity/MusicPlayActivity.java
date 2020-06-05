@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -36,8 +37,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.regex.Pattern;
 
 import okhttp3.Call;
@@ -75,7 +76,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     private Intent songIntent;
     private ValueAnimator mRotateAnimator;
     private int indexTime = 0;
-    private HashMap<Integer, LyricObject> lyricMap = new HashMap<>();
+    private ArrayList<LyricObject> lyricMap = new ArrayList<>();
     private boolean isLyricReady;
 
     private HandlerThread mHandlerThread;
@@ -97,7 +98,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         @Override
         public void run() {
             if (mPlayService != null && mPlayService.getPlayDuration() != 0) {
-                mAlbumImage.setSelectIndex(indexTime);
+                mAlbumImage.setSelectIndex(mPlayService.getPlayPos());
                 mAlbumImage.setOffsetY(mAlbumImage.getOffsetY() - mAlbumImage.getLyricSpeed());
                 mAlbumImage.invalidate();
             }
@@ -108,6 +109,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     protected void onDestroy() {
         super.onDestroy();
         mHandler.removeCallbacksAndMessages(null);
+        mUiHandler.removeCallbacksAndMessages(null);
     }
 
     @Override
@@ -159,6 +161,9 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
             MyLyricThread thread1 = new MyLyricThread();
             thread1.start();
         }
+
+        LyricLoadTask task = new LyricLoadTask();
+        task.execute();
     }
 
     private MusicModel okhttpGetWithLivemic() {
@@ -262,7 +267,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
                 mUiHandler.post(mLyricRunnable);
                 try {
                     Thread.sleep(100);
-                    indexTime+=100;
+//                    indexTime += 100;
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -352,31 +357,58 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         }
     }
 
-    class LyricLoadTask extends AsyncTask<Void,Void,Void>{
+    class LyricLoadTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
             String data = "";
             try {
-                File file = new File("lyric.txt");
+                String prePath = Environment.getExternalStorageDirectory().getAbsolutePath();
+                File file = new File(prePath + "/lyric.txt");
                 if (!file.isFile()) {
                     return null;
                 }
 
                 FileInputStream stream = new FileInputStream(file);
-                BufferedReader br = new BufferedReader(new InputStreamReader(stream,"GB2312"));
+                BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
                 Pattern pattern = Pattern.compile("\\d{2}");
 
                 while ((data = br.readLine()) != null) {
-                    Log.d("TAGTAG","--------"+data+"/n");
-                    data = data.replace("[","");
-                    data = data.replace("]","@");
+                    Log.d("TAGTAG", "--------" + data + "/n");
+                    data = data.replace("[", "");
+                    data = data.replace("]", "@");
                     String splitdata[] = data.split("@");
-                    //歌词中不算时间的部分
-                    if (data.endsWith("@")){
-                        for (int i = 0;i<splitdata.length;i++){
-                            String str = splitdata[i];
-                            str = str.replace()
+                    //歌词中占用了时间的空白段   解析出的类型大概是_@
+                    if (data.endsWith("@")) {
+                        String str = splitdata[0];
+                        str = str.replace(":", ".");
+                        str = str.replace(".", "@");
+                        String timeData[] = str.split("@");
+                        if (timeData.length == 3 && pattern.matcher(timeData[0]).matches()) {
+                            int m = Integer.parseInt(timeData[0]);
+                            int s = Integer.parseInt(timeData[1]);
+                            int ms = Integer.parseInt(timeData[2]);
+                            int curTime = (60 * m + s) * 1000 + ms * 10;
+                            LyricObject object = new LyricObject();
+                            object.setBeginTime(curTime);
+                            object.setLyric("");
+                            lyricMap.add(object);
+                        }
+                    } else {
+                        //歌词中有内容的部分   解析出的类型大概是_@_
+                        String str = splitdata[0];
+                        str = str.replace(":", ".");
+                        str = str.replace(".", "@");
+                        String timeData[] = str.split("@");
+                        if (timeData.length == 3 && pattern.matcher(timeData[0]).matches()) {
+                            int m = Integer.parseInt(timeData[0]);
+                            int s = Integer.parseInt(timeData[1]);
+                            int ms = Integer.parseInt(timeData[2]);
+                            int curTime = (60 * m + s) * 1000 + ms * 10;
+                            LyricObject object = new LyricObject();
+                            object.setBeginTime(curTime);
+                            object.setLyric(splitdata[1]);
+                            lyricMap.add(object);
                         }
                     }
                 }
@@ -391,6 +423,15 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             isLyricReady = true;
+//            LyricObject lastObject = new LyricObject();
+//            LyricObject nowObject = new LyricObject();
+//            //处理上下句的时间差
+//            for (int i = 0; i < lyricMap.size(); i++) {
+//                nowObject = lyricMap.get(i);
+//                nowObject.setTiming(nowObject.getBeginTime() - lastObject.getBeginTime());
+//                lastObject = nowObject;
+//            }
+            mAlbumImage.setData(lyricMap, isLyricReady);
         }
     }
 }
