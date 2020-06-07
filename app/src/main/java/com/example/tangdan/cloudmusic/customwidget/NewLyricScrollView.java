@@ -84,18 +84,23 @@ public class NewLyricScrollView extends View {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 Y = event.getRawY();
-                Log.d("TAGTAG", "手落下的位置Y：" + Y);
+//                Log.d("TAGTAG", "手落下的位置Y：" + Y);
                 break;
             case MotionEvent.ACTION_MOVE:
-                mOffsetY = event.getRawY() - Y;
-                Log.d("TAGTAG", "手move到的位置Y：" + event.getRawY());
+                mOffsetY+=(event.getRawY() - Y)/10;
+                setOffsetY(mOffsetY);
+//                Log.d("TAGTAG", "手move到的位置Y：" + event.getRawY() +"得到的mOffsetY值" + mOffsetY+ "set的Y值" + (mOffsetY + (event.getRawY() - Y))/10);
                 break;
             case MotionEvent.ACTION_UP:
-                Y = event.getRawY();
-                Log.d("TAGTAG", "手抬起的位置Y：" + event.getRawY());
                 break;
         }
         return true;
+    }
+
+    @Override
+    public void scrollTo(int x, int y) {
+        super.scrollTo(x, y);
+        Log.d("TAGTAG", "x:" + x + "y" + y);
     }
 
     public float getLyricSpeed() {
@@ -105,6 +110,7 @@ public class NewLyricScrollView extends View {
 
     public void setOffsetY(float offsetY) {
         this.mOffsetY = offsetY;
+        scrollTo(50,(int)mOffsetY);
     }
 
     public float getOffsetY() {

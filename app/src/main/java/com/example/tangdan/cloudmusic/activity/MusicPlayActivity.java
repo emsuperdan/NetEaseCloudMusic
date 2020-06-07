@@ -266,7 +266,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
             while (true) {
                 mUiHandler.post(mLyricRunnable);
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(10);
 //                    indexTime += 100;
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -374,7 +374,6 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
                 Pattern pattern = Pattern.compile("\\d{2}");
 
                 while ((data = br.readLine()) != null) {
-                    Log.d("TAGTAG", "--------" + data + "/n");
                     data = data.replace("[", "");
                     data = data.replace("]", "@");
                     String splitdata[] = data.split("@");
