@@ -96,7 +96,6 @@ public class NewLyricScrollView extends View {
             case MotionEvent.ACTION_MOVE:
                 break;
             case MotionEvent.ACTION_UP:
-                smoothScrollYTo(1200);
                 break;
         }
         return mGestureDetector.onTouchEvent(event);
@@ -138,10 +137,24 @@ public class NewLyricScrollView extends View {
         }
     }
 
-    public void smoothScrollYTo(int destY){
+    public void smoothScrollYTo(float distance, float velocityY){
         int scrollY = getScrollY();
-        int deltaY = destY-scrollY;
+        mScroller.startScroll(0,scrollY,0,400,500);
+        mOffsetY -= 400;
+        invalidate();
+    }
+
+    public void smoothScrollYToEdge(float bottom,float velocityY){
+        int scrollY = getScrollY();
+        int deltaY = 0;
+        if (velocityY>0){
+            deltaY = 0;
+        }else if (velocityY < 0){
+            deltaY = 1500;
+        }
+        Log.d("TAGTAG", "mOffsetY = " + deltaY);
         mScroller.startScroll(0,scrollY,0,deltaY,500);
+        mOffsetY =deltaY;
         invalidate();
     }
 
@@ -166,11 +179,12 @@ public class NewLyricScrollView extends View {
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             Log.d("TAGTAG", "y速度:" + velocityY+"e1 Y:"+e1.getY()+"e2 Y:"+e2.getY());
-            if (Math.abs(e1.getY()-e2.getY())>800){
-
+            if (Math.abs(e1.getY() - e2.getY()) > 400 && Math.abs(velocityY) > 4000) {
+                Log.d("TAGTAG", "scroll to edge");
+                smoothScrollYToEdge(e2.getY(),velocityY);
+            }else {
+                smoothScrollYTo(e1.getY()-e2.getY(),velocityY);
             }
-//            mScroller.startScroll(0,0,0,-100,200);
-//            mScroller.fling(0,(int)e2.getY(),0,(int)velocityY,0,0,(int)(e2.getY()),(int)(e2.getY()-200));
             isFling = true;
             return super.onFling(e1, e2, velocityX, velocityY);
         }
