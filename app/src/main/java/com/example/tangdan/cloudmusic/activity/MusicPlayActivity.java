@@ -266,7 +266,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
             while (true) {
                 mUiHandler.post(mLyricRunnable);
                 try {
-                    Thread.sleep(10);
+                    Thread.sleep(100);
 //                    indexTime += 100;
                 } catch (InterruptedException e) {
                     e.printStackTrace();

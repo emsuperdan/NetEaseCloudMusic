@@ -6,8 +6,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Scroller;
 
 import com.example.tangdan.cloudmusic.model.LyricObject;
 
@@ -24,6 +26,10 @@ public class NewLyricScrollView extends View {
     private ArrayList<LyricObject> mLyricMap = new ArrayList<>();
     private int hlLineIndex = 0;
     private boolean isLyricReady;
+
+    private Scroller mScroller;
+    private GestureDetector mGestureDetector;
+    private boolean isFling;
 
     public NewLyricScrollView(Context context) {
         super(context);
@@ -45,15 +51,18 @@ public class NewLyricScrollView extends View {
         paint.setAntiAlias(true);
         paint.setDither(true);
         paint.setAlpha(180);
-        paint.setTextSize(32);
+        paint.setTextSize(42);
 
         paintHL = new Paint();
         paintHL.setTextAlign(Paint.Align.CENTER);
         paintHL.setColor(Color.RED);
         paintHL.setAntiAlias(true);
         paintHL.setAlpha(255);
-        paintHL.setTextSize(35);
+        paintHL.setTextSize(45);
 
+        mScroller = new Scroller(getContext());
+        mGestureDetector = new GestureDetector(getContext(), mSimpleOnGestureListener);
+        mGestureDetector.setIsLongpressEnabled(false);
     }
 
     @Override
@@ -83,24 +92,14 @@ public class NewLyricScrollView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                Y = event.getRawY();
-//                Log.d("TAGTAG", "手落下的位置Y：" + Y);
                 break;
             case MotionEvent.ACTION_MOVE:
-                mOffsetY+=(event.getRawY() - Y)/10;
-                setOffsetY(mOffsetY);
-//                Log.d("TAGTAG", "手move到的位置Y：" + event.getRawY() +"得到的mOffsetY值" + mOffsetY+ "set的Y值" + (mOffsetY + (event.getRawY() - Y))/10);
                 break;
             case MotionEvent.ACTION_UP:
+                smoothScrollYTo(1200);
                 break;
         }
-        return true;
-    }
-
-    @Override
-    public void scrollTo(int x, int y) {
-        super.scrollTo(x, y);
-        Log.d("TAGTAG", "x:" + x + "y" + y);
+        return mGestureDetector.onTouchEvent(event);
     }
 
     public float getLyricSpeed() {
@@ -110,7 +109,6 @@ public class NewLyricScrollView extends View {
 
     public void setOffsetY(float offsetY) {
         this.mOffsetY = offsetY;
-        scrollTo(50,(int)mOffsetY);
     }
 
     public float getOffsetY() {
@@ -131,4 +129,50 @@ public class NewLyricScrollView extends View {
         this.isLyricReady = isLyricReady;
         mLyricMap = map;
     }
+
+    @Override
+    public void computeScroll() {
+        if (mScroller.computeScrollOffset()){
+            scrollTo(mScroller.getCurrX(),mScroller.getCurrY());
+            postInvalidate();
+        }
+    }
+
+    public void smoothScrollYTo(int destY){
+        int scrollY = getScrollY();
+        int deltaY = destY-scrollY;
+        mScroller.startScroll(0,scrollY,0,deltaY,500);
+        invalidate();
+    }
+
+    private GestureDetector.SimpleOnGestureListener mSimpleOnGestureListener = new GestureDetector.SimpleOnGestureListener() {
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            if (isFling){
+                mScroller.forceFinished(true);
+                isFling = false;
+            }
+            return true;
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            mOffsetY-=distanceY;
+            invalidate();
+            return super.onScroll(e1, e2, distanceX, distanceY);
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            Log.d("TAGTAG", "y速度:" + velocityY+"e1 Y:"+e1.getY()+"e2 Y:"+e2.getY());
+            if (Math.abs(e1.getY()-e2.getY())>800){
+
+            }
+//            mScroller.startScroll(0,0,0,-100,200);
+//            mScroller.fling(0,(int)e2.getY(),0,(int)velocityY,0,0,(int)(e2.getY()),(int)(e2.getY()-200));
+            isFling = true;
+            return super.onFling(e1, e2, velocityX, velocityY);
+        }
+    };
 }
