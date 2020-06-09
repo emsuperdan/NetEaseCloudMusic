@@ -28,6 +28,7 @@ public class NewLyricScrollView extends View {
     private int hlLineIndex = 0;
     private boolean isLyricReady;
     private boolean isReachTop = true, isReachBottom;
+    private boolean mAllowOffset = true;
 
     private Scroller mScroller;
     private GestureDetector mGestureDetector;
@@ -109,6 +110,9 @@ public class NewLyricScrollView extends View {
     }
 
     public void setOffsetY(float offsetY) {
+        if (!mAllowOffset){
+            return;
+        }
         this.mOffsetY = offsetY;
     }
 
@@ -134,9 +138,12 @@ public class NewLyricScrollView extends View {
     @Override
     public void computeScroll() {
         if (mScroller.computeScrollOffset()) {
+            mAllowOffset = false;
             scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
             mScrollY = mScroller.getCurrY();
             postInvalidate();
+        }else {
+            mAllowOffset = true;
         }
     }
 
@@ -172,13 +179,14 @@ public class NewLyricScrollView extends View {
         if (velocityY > 0 && !isReachTop) {
             mScroller.startScroll(0, scrollY, 0, -50 * elementA * elementB, duration);
             mOffsetY += 50 * elementA * elementB;
-        } else if (velocityY < 0 && !isReachBottom){
+        } else if (velocityY < 0 && !isReachBottom) {
             mScroller.startScroll(0, scrollY, 0, 50 * elementA * elementB, duration);
             mOffsetY -= 50 * elementA * elementB;
         }
         invalidate();
     }
 
+    //暂时支持滑动到top，不支持滑动到bottom
     public void smoothScrollYToEdge(float velocityY) {
         int scrollY = getScrollY();
         int deltaY = -(int) mScrollY;
@@ -205,8 +213,9 @@ public class NewLyricScrollView extends View {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            Log.d("TAGTAG", "mOffsetY" + mOffsetY);
-            if (mOffsetY >= 600) {
+            Log.d("TAGTAG","mOffsetY"+mOffsetY);
+            if (mOffsetY >= 600 && distanceY < 0) {
+                mOffsetY = 600;
                 isReachTop = true;
                 return super.onScroll(e1, e2, distanceX, distanceY);
             } else {
@@ -219,9 +228,7 @@ public class NewLyricScrollView extends View {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            Log.d("TAGTAG", "y速度:" + velocityY + "  e1 Y:" + e1.getY() + "  e2 Y:" + e2.getY());
             if (Math.abs(e1.getY() - e2.getY()) > 400 && Math.abs(velocityY) > 4000) {
-                Log.d("TAGTAG", "scroll to edge");
                 smoothScrollYToEdge(velocityY);
             } else {
                 smoothScrollYTo(e1.getY() - e2.getY(), velocityY);
