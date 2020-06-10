@@ -1,5 +1,6 @@
 package com.example.tangdan.cloudmusic.customwidget;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -19,16 +20,20 @@ public class NewLyricScrollView extends View {
     private float mCenterX;//歌词中间点 固定值
     private float lyricHeight;
     private float mOffsetY;//用作歌词滚动偏移;(相对于canvas来说)
+    private float mOffsetYCache;//用作歌词滚动之后的回滚;
     private float mScrollY;//记录控件scroll偏移;()
     private float Y = 0;//计算跟手移动Y距离
     private final int INTERVAL = 80;//歌词每行的间隔
     Paint paint = new Paint();//画笔，用于画不是高亮的歌词
     Paint paintHL = new Paint();//画笔，用于画高亮的歌词，即当前唱到这句歌词
+    private float mLyricTotalHeight;
     private ArrayList<LyricObject> mLyricMap = new ArrayList<>();
     private int hlLineIndex = 0;
     private boolean isLyricReady;
     private boolean isReachTop = true, isReachBottom;
     private boolean mAllowOffset = true;
+    private LyricOnClickListener listener;
+    private ValueAnimator mRollbackAnimator;
 
     private Scroller mScroller;
     private GestureDetector mGestureDetector;
@@ -46,6 +51,7 @@ public class NewLyricScrollView extends View {
 
     private void init() {
         mOffsetY = 600;
+        mOffsetYCache = 600;
         setBackgroundColor(Color.YELLOW);
 
         paint = new Paint();
@@ -68,6 +74,27 @@ public class NewLyricScrollView extends View {
         mGestureDetector.setIsLongpressEnabled(false);
     }
 
+    private void createRollbackAnimator(float startY, float endY) {
+        mRollbackAnimator = ValueAnimator.ofFloat(startY, endY);
+        mRollbackAnimator.setStartDelay(5000);
+        mRollbackAnimator.setDuration(500);
+        mRollbackAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mOffsetY = (float) animation.getAnimatedValue();
+                invalidate();
+            }
+        });
+        mRollbackAnimator.start();
+    }
+
+    private void cancelRollbackAnimator() {
+        if (mRollbackAnimator != null) {
+            mRollbackAnimator.cancel();
+            mRollbackAnimator = null;
+        }
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -82,6 +109,10 @@ public class NewLyricScrollView extends View {
         for (int i = hlLineIndex + 1; i < mLyricMap.size(); i++) {
             canvas.drawText(mLyricMap.get(i).getLyric(), mCenterX, mOffsetY + (INTERVAL) * (i + 1), paint);
         }
+    }
+
+    public void setLyricOnClickListener(LyricOnClickListener listener) {
+        this.listener = listener;
     }
 
     @Override
@@ -99,6 +130,13 @@ public class NewLyricScrollView extends View {
             case MotionEvent.ACTION_MOVE:
                 break;
             case MotionEvent.ACTION_UP:
+//                if (isScrolled ) {
+//                    isScrolled = false;
+//                    Log.d("TAGTAG","起始点mOffsetY"+mOffsetY+"    终点mOffsetYCache"+mOffsetYCache);
+//                    createRollbackAnimator(mOffsetY,mOffsetYCache);
+//                }else {
+//                    cancelRollbackAnimator();
+//                }
                 break;
         }
         return mGestureDetector.onTouchEvent(event);
@@ -106,11 +144,12 @@ public class NewLyricScrollView extends View {
 
     public float getLyricSpeed() {
         float speed = 1f;
+        mOffsetYCache -= 1;
         return speed;
     }
 
     public void setOffsetY(float offsetY) {
-        if (!mAllowOffset){
+        if (!mAllowOffset) {
             return;
         }
         this.mOffsetY = offsetY;
@@ -130,9 +169,11 @@ public class NewLyricScrollView extends View {
         }
     }
 
-    public void setData(ArrayList<LyricObject> map, boolean isLyricReady) {
+    public void setData(ArrayList<LyricObject> map, boolean isLyricReady, int lineNumber) {
         this.isLyricReady = isLyricReady;
         mLyricMap = map;
+        mLyricTotalHeight = 75 * lineNumber;
+        Log.d("TAGTAG", "mLyricTotalHeight" + mLyricTotalHeight);
     }
 
     @Override
@@ -142,7 +183,7 @@ public class NewLyricScrollView extends View {
             scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
             mScrollY = mScroller.getCurrY();
             postInvalidate();
-        }else {
+        } else {
             mAllowOffset = true;
         }
     }
@@ -187,7 +228,7 @@ public class NewLyricScrollView extends View {
     }
 
     //暂时支持滑动到top，不支持滑动到bottom
-    public void smoothScrollYToEdge(float velocityY) {
+    public void smoothScrollYToEdge(float distance,float velocityY) {
         int scrollY = getScrollY();
         int deltaY = -(int) mScrollY;
         if (velocityY < 0) {
@@ -212,16 +253,30 @@ public class NewLyricScrollView extends View {
         }
 
         @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            listener.performClick();
+            return super.onSingleTapUp(e);
+        }
+
+        @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            Log.d("TAGTAG","mOffsetY"+mOffsetY);
-            if (mOffsetY >= 600 && distanceY < 0) {
+            Log.d("TAGTAG", "mOffsetY" + mOffsetY + "   distanceY" + distanceY);
+            mOffsetY -= distanceY;
+            if (mOffsetY > 600) {
                 mOffsetY = 600;
                 isReachTop = true;
                 return super.onScroll(e1, e2, distanceX, distanceY);
             } else {
                 isReachTop = false;
             }
-            mOffsetY -= distanceY;
+
+            if (mOffsetY < (600 - mLyricTotalHeight)) {
+                mOffsetY = 600 - mLyricTotalHeight;
+                isReachBottom = true;
+                return super.onScroll(e1, e2, distanceX, distanceY);
+            } else {
+                isReachBottom = false;
+            }
             invalidate();
             return super.onScroll(e1, e2, distanceX, distanceY);
         }
@@ -229,7 +284,7 @@ public class NewLyricScrollView extends View {
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             if (Math.abs(e1.getY() - e2.getY()) > 400 && Math.abs(velocityY) > 4000) {
-                smoothScrollYToEdge(velocityY);
+                smoothScrollYToEdge(e1.getY() - e2.getY(),velocityY);
             } else {
                 smoothScrollYTo(e1.getY() - e2.getY(), velocityY);
             }
@@ -237,4 +292,10 @@ public class NewLyricScrollView extends View {
             return super.onFling(e1, e2, velocityX, velocityY);
         }
     };
+
+    public interface LyricOnClickListener {
+        void performClick();
+
+        void performLongClick();
+    }
 }

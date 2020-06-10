@@ -15,11 +15,13 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.tangdan.cloudmusic.R;
 import com.example.tangdan.cloudmusic.component.MusicPlayProgressBar;
 import com.example.tangdan.cloudmusic.customwidget.NewLyricScrollView;
+import com.example.tangdan.cloudmusic.customwidget.RotatingAlbum;
 import com.example.tangdan.cloudmusic.model.LyricObject;
 import com.example.tangdan.cloudmusic.model.MusicModel;
 import com.example.tangdan.cloudmusic.service.MusicPlayService;
@@ -30,6 +32,7 @@ import com.example.tangdan.cloudmusic.utils.TimeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -37,7 +40,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
@@ -56,13 +58,15 @@ import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SON
 import static com.example.tangdan.cloudmusic.utils.Constants.live_mic_url0;
 import static com.example.tangdan.cloudmusic.utils.Constants.live_mic_url1;
 
-public class MusicPlayActivity extends BaseActivity implements View.OnClickListener, MusicPlayProgressBar.ProgressBarListener {
+public class MusicPlayActivity extends BaseActivity implements View.OnClickListener, MusicPlayProgressBar.ProgressBarListener, NewLyricScrollView.LyricOnClickListener {
     private static final String SONG_PATH = "SONG_PATH";
 
     private MusicPlayProgressBar mMusicPlayProgressBar;
     private Button mPlayButton, mLastButton, mNextButton;
     private TextView mCurPlayTime, mTotalPlayTime;
-    private NewLyricScrollView mAlbumImage;
+    private NewLyricScrollView mLyricScrollView;
+    private RotatingAlbum mRotatingAlbum;
+    private RelativeLayout mTouchArea;
 
     private MusicModel mModel;
     private Bundle mBundle;
@@ -78,6 +82,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     private int indexTime = 0;
     private ArrayList<LyricObject> lyricMap = new ArrayList<>();
     private boolean isLyricReady;
+    private boolean isAlbumShowed = true; //专辑图片和歌词切换判断
 
     private HandlerThread mHandlerThread;
     private Handler mHandler;
@@ -98,9 +103,9 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         @Override
         public void run() {
             if (mPlayService != null && mPlayService.getPlayDuration() != 0) {
-                mAlbumImage.setSelectIndex(mPlayService.getPlayPos());
-                mAlbumImage.setOffsetY(mAlbumImage.getOffsetY() - mAlbumImage.getLyricSpeed());
-                mAlbumImage.invalidate();
+                mLyricScrollView.setSelectIndex(mPlayService.getPlayPos());
+                mLyricScrollView.setOffsetY(mLyricScrollView.getOffsetY() - mLyricScrollView.getLyricSpeed());
+                mLyricScrollView.invalidate();
             }
         }
     };
@@ -125,13 +130,18 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mPlayButton = (Button) findViewById(R.id.btn_stoporplay);
         mLastButton = (Button) findViewById(R.id.btn_nextsong);
         mNextButton = (Button) findViewById(R.id.btn_lastsong);
-        mAlbumImage = (NewLyricScrollView) findViewById(R.id.iv_albumimage);
+        mLyricScrollView = (NewLyricScrollView) findViewById(R.id.lyric_scrollview);
+        mRotatingAlbum = (RotatingAlbum) findViewById(R.id.rotating_album);
+        mTouchArea = (RelativeLayout) findViewById(R.id.lyric_album_toucharea);
         mCurPlayTime = findViewById(R.id.tv_play_curtime);
         mTotalPlayTime = findViewById(R.id.tv_play_totaltime);
 
         mPlayButton.setOnClickListener(this);
         mLastButton.setOnClickListener(this);
         mNextButton.setOnClickListener(this);
+        mTouchArea.setOnClickListener(this);
+        mLyricScrollView.setOnClickListener(this);
+        mLyricScrollView.setLyricOnClickListener(this);
         mMusicPlayProgressBar.setProgressBarListener(this);
         mPreferenceUtil = PreferenceUtil.getInstance(this);
         songIntent = new Intent();
@@ -160,6 +170,19 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
 
             MyLyricThread thread1 = new MyLyricThread();
             thread1.start();
+
+            mRotateAnimator = ValueAnimator.ofFloat(0, 360f);
+            mRotateAnimator.setDuration(60000);
+            mRotateAnimator.setRepeatCount(-1);
+            mRotateAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    float value = (float) animation.getAnimatedValue();
+                    mRotatingAlbum.setRotatePer(value);
+                    mRotatingAlbum.invalidate();
+                }
+            });
+            mRotateAnimator.start();
         }
 
         LyricLoadTask task = new LyricLoadTask();
@@ -242,6 +265,24 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         return list;
     }
 
+    @Override
+    public void performClick() {
+        if (isAlbumShowed) {
+            mRotatingAlbum.setVisibility(View.INVISIBLE);
+            mLyricScrollView.setVisibility(View.VISIBLE);
+            isAlbumShowed = false;
+        } else {
+            mRotatingAlbum.setVisibility(View.VISIBLE);
+            mLyricScrollView.setVisibility(View.INVISIBLE);
+            isAlbumShowed = true;
+        }
+    }
+
+    @Override
+    public void performLongClick() {
+
+    }
+
     private class MyPlayProgressThread extends Thread {
         @Override
         public void run() {
@@ -288,13 +329,13 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
                 boolean flag = mPlayService.isPlaying();
                 mPlayService.setPlay(!flag);
 
-//                if (!flag){
-//                    mRotateAnimator.resume();
-//                }else {
-//                    if (mRotateAnimator!=null){
-//                        mRotateAnimator.pause();
-//                    }
-//                }
+                if (!flag) {
+                    mRotateAnimator.resume();
+                } else {
+                    if (mRotateAnimator != null) {
+                        mRotateAnimator.pause();
+                    }
+                }
 
                 break;
             case R.id.btn_lastsong:
@@ -333,6 +374,17 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
                 mSongName = mSongNameList.get(pos1);
                 mPlayService.playNextSong(mSongPath);
                 break;
+            case R.id.lyric_album_toucharea:
+                if (isAlbumShowed) {
+                    mRotatingAlbum.setVisibility(View.INVISIBLE);
+                    mLyricScrollView.setVisibility(View.VISIBLE);
+                    isAlbumShowed = false;
+                } else {
+                    mRotatingAlbum.setVisibility(View.VISIBLE);
+                    mLyricScrollView.setVisibility(View.INVISIBLE);
+                    isAlbumShowed = true;
+                }
+                break;
             default:
                 break;
         }
@@ -358,22 +410,49 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     }
 
     class LyricLoadTask extends AsyncTask<Void, Void, Void> {
+        private int lineNumber;
 
         @Override
         protected Void doInBackground(Void... voids) {
             String data = "";
             try {
                 String prePath = Environment.getExternalStorageDirectory().getAbsolutePath();
-                File file = new File(prePath + "/lyric.txt");
+                File file = new File(prePath + "/温泉_许嵩+刘美麟.lrc");
                 if (!file.isFile()) {
                     return null;
                 }
 
                 FileInputStream stream = new FileInputStream(file);
-                BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+                //需要找到文档前三个字节来判断文档类型
+                BufferedInputStream bis = new BufferedInputStream(stream);
+                BufferedReader reader = null;
+                bis.mark(4);
+                byte[] first3bytes = new byte[3];
+                bis.read(first3bytes);
+                bis.reset();
+                if (first3bytes[0] == (byte) 0xEF && first3bytes[1] == (byte) 0xBB
+                        && first3bytes[2] == (byte) 0xBF) {// utf-8
+                    reader = new BufferedReader(new InputStreamReader(bis, "utf-8"));
+                } else if (first3bytes[0] == (byte) 0xFF
+                        && first3bytes[1] == (byte) 0xFE) {
+                    reader = new BufferedReader(
+                            new InputStreamReader(bis, "unicode"));
+                } else if (first3bytes[0] == (byte) 0xFE
+                        && first3bytes[1] == (byte) 0xFF) {
+                    reader = new BufferedReader(new InputStreamReader(bis,
+                            "utf-16be"));
+                } else if (first3bytes[0] == (byte) 0xFF
+                        && first3bytes[1] == (byte) 0xFF) {
+                    reader = new BufferedReader(new InputStreamReader(bis,
+                            "utf-16le"));
+                } else {
+                    reader = new BufferedReader(new InputStreamReader(bis, "GBK"));
+                }
+
                 Pattern pattern = Pattern.compile("\\d{2}");
 
-                while ((data = br.readLine()) != null) {
+                while ((data = reader.readLine()) != null) {
+                    lineNumber++;
                     data = data.replace("[", "");
                     data = data.replace("]", "@");
                     String splitdata[] = data.split("@");
@@ -430,7 +509,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
 //                nowObject.setTiming(nowObject.getBeginTime() - lastObject.getBeginTime());
 //                lastObject = nowObject;
 //            }
-            mAlbumImage.setData(lyricMap, isLyricReady);
+            mLyricScrollView.setData(lyricMap, isLyricReady,lineNumber);
         }
     }
 }

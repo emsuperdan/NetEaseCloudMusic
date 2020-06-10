@@ -5,20 +5,31 @@
     android:orientation="vertical">
 
     <RelativeLayout
+        android:id="@+id/lyric_album_toucharea"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:background="@color/red">
+
         <com.example.tangdan.cloudmusic.customwidget.NewLyricScrollView
-            android:id="@+id/iv_albumimage"
+            android:id="@+id/lyric_scrollview"
+            android:visibility="invisible"
+            android:clickable="true"
+            android:focusable="true"
             android:layout_width="350dp"
             android:layout_height="550dp"
-            android:layout_marginBottom="30dp"
-            android:scrollbars="none"
             android:layout_alignParentBottom="true"
-            android:layout_centerInParent="true">
+            android:layout_centerInParent="true"
+            android:layout_marginBottom="30dp">
 
-     </com.example.tangdan.cloudmusic.customwidget.NewLyricScrollView>
+        </com.example.tangdan.cloudmusic.customwidget.NewLyricScrollView>
+
+        <com.example.tangdan.cloudmusic.customwidget.RotatingAlbum
+            android:id="@+id/rotating_album"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:layout_centerInParent="true"
+            android:layout_marginBottom="30dp"></com.example.tangdan.cloudmusic.customwidget.RotatingAlbum>
 
     </RelativeLayout>
 
@@ -39,8 +50,8 @@
                 android:id="@+id/tv_play_curtime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/black"
-                android:text="00:00" />
+                android:text="00:00"
+                android:textColor="@color/black" />
 
             <com.example.tangdan.cloudmusic.component.MusicPlayProgressBar
                 android:id="@+id/progress_music_bar"
@@ -51,10 +62,10 @@
 
             <TextView
                 android:id="@+id/tv_play_totaltime"
-                android:textColor="@color/black"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="00:00" />
+                android:text="00:00"
+                android:textColor="@color/black" />
         </LinearLayout>
 
         <LinearLayout
