@@ -20,9 +20,7 @@ public class NewLyricScrollView extends View {
     private float mCenterX;//歌词中间点 固定值
     private float lyricHeight;
     private float mOffsetY;//用作歌词滚动偏移;(相对于canvas来说)
-    private float mOffsetYCache;//用作歌词滚动之后的回滚;
     private float mScrollY;//记录控件scroll偏移;()
-    private float Y = 0;//计算跟手移动Y距离
     private final int INTERVAL = 80;//歌词每行的间隔
     Paint paint = new Paint();//画笔，用于画不是高亮的歌词
     Paint paintHL = new Paint();//画笔，用于画高亮的歌词，即当前唱到这句歌词
@@ -50,8 +48,7 @@ public class NewLyricScrollView extends View {
     }
 
     private void init() {
-        mOffsetY = 600;
-        mOffsetYCache = 600;
+        mOffsetY = -600;
         setBackgroundColor(Color.YELLOW);
 
         paint = new Paint();
@@ -101,13 +98,13 @@ public class NewLyricScrollView extends View {
         if (!isLyricReady) {
             return;
         }
-        canvas.drawText(mLyricMap.get(hlLineIndex).getLyric(), mCenterX, mOffsetY + INTERVAL * (hlLineIndex + 1), paintHL);
+        canvas.drawText(mLyricMap.get(hlLineIndex).getLyric(), mCenterX, INTERVAL * (hlLineIndex + 1), paintHL);
 
         for (int i = 0; i < hlLineIndex; i++) {
-            canvas.drawText(mLyricMap.get(i).getLyric(), mCenterX, mOffsetY + (INTERVAL) * (i + 1), paint);
+            canvas.drawText(mLyricMap.get(i).getLyric(), mCenterX, (INTERVAL) * (i + 1), paint);
         }
         for (int i = hlLineIndex + 1; i < mLyricMap.size(); i++) {
-            canvas.drawText(mLyricMap.get(i).getLyric(), mCenterX, mOffsetY + (INTERVAL) * (i + 1), paint);
+            canvas.drawText(mLyricMap.get(i).getLyric(), mCenterX, (INTERVAL) * (i + 1), paint);
         }
     }
 
@@ -144,7 +141,6 @@ public class NewLyricScrollView extends View {
 
     public float getLyricSpeed() {
         float speed = 1f;
-        mOffsetYCache -= 1;
         return speed;
     }
 
@@ -153,6 +149,11 @@ public class NewLyricScrollView extends View {
             return;
         }
         this.mOffsetY = offsetY;
+        if (mOffsetY > (-600 + mLyricTotalHeight)) {
+            mOffsetY = -600 + mLyricTotalHeight;
+            isReachBottom = true;
+        }
+        scrollTo(0, (int) mOffsetY);
     }
 
     public float getOffsetY() {
@@ -219,16 +220,20 @@ public class NewLyricScrollView extends View {
 
         if (velocityY > 0 && !isReachTop) {
             mScroller.startScroll(0, scrollY, 0, -50 * elementA * elementB, duration);
-            mOffsetY += 50 * elementA * elementB;
+            mOffsetY -= 50 * elementA * elementB;
+            if (mOffsetY < -600) {
+                mOffsetY = -600;
+            }
         } else if (velocityY < 0 && !isReachBottom) {
             mScroller.startScroll(0, scrollY, 0, 50 * elementA * elementB, duration);
-            mOffsetY -= 50 * elementA * elementB;
+            mOffsetY += 50 * elementA * elementB;
         }
+        Log.d("TAGTAG", "smoothScroll之后的mOffsetY" + mOffsetY);
         invalidate();
     }
 
     //暂时支持滑动到top，不支持滑动到bottom
-    public void smoothScrollYToEdge(float distance,float velocityY) {
+    public void smoothScrollYToEdge(float distance, float velocityY) {
         int scrollY = getScrollY();
         int deltaY = -(int) mScrollY;
         if (velocityY < 0) {
@@ -260,34 +265,37 @@ public class NewLyricScrollView extends View {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            Log.d("TAGTAG", "mOffsetY" + mOffsetY + "   distanceY" + distanceY);
-            mOffsetY -= distanceY;
-            if (mOffsetY > 600) {
-                mOffsetY = 600;
+            Log.d("TAGTAG", "call scroll");
+            mOffsetY += distanceY;
+            if (mOffsetY < -600) {
+                mOffsetY = -600;
                 isReachTop = true;
+                scrollTo(0, (int) mOffsetY);
+                invalidate();
                 return super.onScroll(e1, e2, distanceX, distanceY);
             } else {
                 isReachTop = false;
             }
 
-            if (mOffsetY < (600 - mLyricTotalHeight)) {
-                mOffsetY = 600 - mLyricTotalHeight;
+            if (mOffsetY > (-600 + mLyricTotalHeight)) {
+                mOffsetY = -600 + mLyricTotalHeight;
                 isReachBottom = true;
+                scrollTo(0, (int) mOffsetY);
+                invalidate();
                 return super.onScroll(e1, e2, distanceX, distanceY);
             } else {
                 isReachBottom = false;
             }
-            invalidate();
             return super.onScroll(e1, e2, distanceX, distanceY);
         }
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            if (Math.abs(e1.getY() - e2.getY()) > 400 && Math.abs(velocityY) > 4000) {
-                smoothScrollYToEdge(e1.getY() - e2.getY(),velocityY);
-            } else {
-                smoothScrollYTo(e1.getY() - e2.getY(), velocityY);
-            }
+//            if (Math.abs(e1.getY() - e2.getY()) > 400 && Math.abs(velocityY) > 4000) {
+//                smoothScrollYToEdge(e1.getY() - e2.getY(),velocityY);
+//            } else {
+            smoothScrollYTo(e1.getY() - e2.getY(), velocityY);
+//            }
             isFling = true;
             return super.onFling(e1, e2, velocityX, velocityY);
         }

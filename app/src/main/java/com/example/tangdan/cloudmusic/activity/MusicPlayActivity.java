@@ -104,7 +104,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         public void run() {
             if (mPlayService != null && mPlayService.getPlayDuration() != 0) {
                 mLyricScrollView.setSelectIndex(mPlayService.getPlayPos());
-                mLyricScrollView.setOffsetY(mLyricScrollView.getOffsetY() - mLyricScrollView.getLyricSpeed());
+                mLyricScrollView.setOffsetY(mLyricScrollView.getOffsetY() + mLyricScrollView.getLyricSpeed());
                 mLyricScrollView.invalidate();
             }
         }
@@ -417,7 +417,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
             String data = "";
             try {
                 String prePath = Environment.getExternalStorageDirectory().getAbsolutePath();
-                File file = new File(prePath + "/温泉_许嵩+刘美麟.lrc");
+                File file = new File(prePath + "/Home_蔡徐坤.lrc");
                 if (!file.isFile()) {
                     return null;
                 }
