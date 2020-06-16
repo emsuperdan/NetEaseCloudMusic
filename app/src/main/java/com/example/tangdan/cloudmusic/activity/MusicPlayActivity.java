@@ -104,7 +104,6 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         public void run() {
             if (mPlayService != null && mPlayService.getPlayDuration() != 0) {
                 mLyricScrollView.setSelectIndex(mPlayService.getPlayPos());
-                mLyricScrollView.setOffsetY(mLyricScrollView.getOffsetY() + mLyricScrollView.getLyricSpeed());
                 mLyricScrollView.invalidate();
             }
         }
