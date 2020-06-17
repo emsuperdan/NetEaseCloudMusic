@@ -23,7 +23,6 @@ public class NewLyricScrollView extends View {
     private float mCenterX;//歌词中间点 固定值
     private float lyricHeight;
     private float mOffsetY;//记录歌词滚动偏移
-    private float mOldOffsetY;//用作歌词回滚
     private final int INTERVAL = 100;//歌词每行的间隔
     Paint paint = new Paint();//画笔，用于画不是高亮的歌词
     Paint paintHL = new Paint();//画笔，用于画高亮的歌词，即当前唱到这句歌词
@@ -93,7 +92,6 @@ public class NewLyricScrollView extends View {
     }
 
     private void createRollbackAnimator(float startY, float endY) {
-        Log.d("TAGTAG", "create a animator range:" + startY + "   end" + endY);
         cancelRollbackAnimator();
         if (startY == endY) {
             return;
@@ -104,8 +102,8 @@ public class NewLyricScrollView extends View {
         mRollbackAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                float value = (float) animation.getAnimatedValue();
-                scrollTo(0, (int) value);
+                mOffsetY = (float) animation.getAnimatedValue();
+                scrollTo(0, (int) mOffsetY);
                 invalidate();
             }
         });
@@ -114,8 +112,8 @@ public class NewLyricScrollView extends View {
 
     private void cancelRollbackAnimator() {
         if (mRollbackAnimator != null) {
+            mRollbackAnimator.removeAllListeners();
             mRollbackAnimator.cancel();
-            mRollbackAnimator.addUpdateListener(null);
             mRollbackAnimator = null;
         }
     }
@@ -127,6 +125,7 @@ public class NewLyricScrollView extends View {
         mShowDashAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
+                Log.d("TAGTAG","hidedashLine");
                 showDashLine = false;
                 invalidate();
             }
@@ -136,8 +135,8 @@ public class NewLyricScrollView extends View {
 
     private void cancelShowDashAnimator() {
         if (mShowDashAnimator != null) {
+            mShowDashAnimator.removeAllListeners();
             mShowDashAnimator.cancel();
-            mShowDashAnimator.addListener(null);
             mShowDashAnimator = null;
         }
     }
@@ -177,21 +176,18 @@ public class NewLyricScrollView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                mOldOffsetY = mOffsetY;
                 break;
             case MotionEvent.ACTION_MOVE:
                 mAllowOffset = false;
                 showDashLine = true;
+                Log.d("TAGTAG","showdashLine");
                 break;
             case MotionEvent.ACTION_UP:
                 mAllowOffset = true;
-                if (isScrolled) {
-                    isScrolled = false;
+                if (showDashLine) {
                     createShowDashAnimator();
-                    createRollbackAnimator(mOffsetY, mOldOffsetY);
                 } else {
                     cancelShowDashAnimator();
-                    cancelRollbackAnimator();
                 }
                 break;
         }
@@ -211,8 +207,12 @@ public class NewLyricScrollView extends View {
         if (mOffsetY > (mLyricTotalHeight)) {
             mOffsetY = mLyricTotalHeight;
             isReachBottom = true;
+        } else if (mOffsetY < 0) {
+            mOffsetY = 0;
+            isReachTop = true;
         }
         scrollTo(0, (int) mOffsetY);
+        invalidate();
     }
 
     public float getOffsetY() {
@@ -221,7 +221,21 @@ public class NewLyricScrollView extends View {
 
     public void setSelectIndex(int currentTime) {
         if (mOldTime > currentTime) {//如果用户把pos指针往当前位置的前面调整，那么重置index
-            mIndexCache = 1;
+            int index = 1;
+            for (int i = index; i < mLyricMap.size(); i++) {//拿到往前调整到的位置的index
+                LyricObject temp = mLyricMap.get(i);
+                if (temp.getBeginTime() < currentTime) {
+                    mOldTime = currentTime;
+                    hlLineIndex = index++;
+                }
+            }
+
+            for (int i = 0; i < (mIndexCache - index); i++) {//相减得到相差的offsetY
+                setOffsetY(getOffsetY() - 100);
+            }
+
+            mIndexCache = index;
+            return;
         }
 
         for (int i = mIndexCache; i < mLyricMap.size(); i++) {
@@ -229,7 +243,7 @@ public class NewLyricScrollView extends View {
             if (temp.getBeginTime() < currentTime) {
                 mOldTime = currentTime;
                 hlLineIndex = mIndexCache++;
-                setOffsetY(getOffsetY() + 75);
+                setOffsetY(getOffsetY() + 100);
             }
         }
     }
@@ -237,7 +251,7 @@ public class NewLyricScrollView extends View {
     public void setData(ArrayList<LyricObject> map, boolean isLyricReady, int lineNumber) {
         this.isLyricReady = isLyricReady;
         mLyricMap = map;
-        mLyricTotalHeight = 75 * lineNumber;
+        mLyricTotalHeight = 93 * lineNumber;
         mLineNumber = lineNumber;
         Log.d("TAGTAG", "mLyricTotalHeight" + mLyricTotalHeight);
     }
@@ -247,16 +261,23 @@ public class NewLyricScrollView extends View {
         if (mScroller.computeScrollOffset()) {
             Log.d("TAGTAG", "滑动中" + mScroller.getCurrY());
             mAllowOffset = false;
-            if (mScroller.getCurrY() < -600) {
-                scrollTo(mScroller.getCurrX(), -600);
+            if (mScroller.getCurrY() < 0) {
+                scrollTo(mScroller.getCurrX(), 0);
                 mOffsetY = 0;
-            } else if (mScroller.getCurrY() > (-600 + mLyricTotalHeight)) {
-                scrollTo(mScroller.getCurrX(), (int) (-600 + mLyricTotalHeight));
+            } else if (mScroller.getCurrY() > (mLyricTotalHeight)) {
+                scrollTo(mScroller.getCurrX(), (int) (mLyricTotalHeight));
                 mOffsetY = mLyricTotalHeight;
             } else {
                 scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
                 mOffsetY = mScroller.getCurrY();
             }
+
+//            if (isScrolled) {
+//                isScrolled = false;
+//                createRollbackAnimator(mOffsetY, hlLineIndex * 100);
+//            } else {
+//                cancelRollbackAnimator();
+//            }
             postInvalidate();
         } else {
             mAllowOffset = true;
@@ -357,6 +378,14 @@ public class NewLyricScrollView extends View {
             }
             isScrolled = true;
             scrollTo(0, (int) mOffsetY);
+
+            if (isScrolled) {
+                isScrolled = false;
+                createRollbackAnimator(mOffsetY, hlLineIndex * 100);
+            } else {
+                cancelRollbackAnimator();
+            }
+
             invalidate();
             Log.d("TAGTAG", "scroll 过程中的mOffsetY" + mOffsetY);
             return super.onScroll(e1, e2, distanceX, distanceY);
@@ -370,6 +399,7 @@ public class NewLyricScrollView extends View {
                 smoothScrollYTo(e1.getY() - e2.getY(), velocityY);
             }
             isFling = true;
+            isScrolled = true;
             return super.onFling(e1, e2, velocityX, velocityY);
         }
     };
