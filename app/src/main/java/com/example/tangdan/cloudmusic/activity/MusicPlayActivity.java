@@ -58,7 +58,7 @@ import static com.example.tangdan.cloudmusic.utils.Constants.PREF_PREFERENCE_SON
 import static com.example.tangdan.cloudmusic.utils.Constants.live_mic_url0;
 import static com.example.tangdan.cloudmusic.utils.Constants.live_mic_url1;
 
-public class MusicPlayActivity extends BaseActivity implements View.OnClickListener, MusicPlayProgressBar.ProgressBarListener, NewLyricScrollView.LyricOnClickListener {
+public class MusicPlayActivity extends BaseActivity implements View.OnClickListener, MusicPlayProgressBar.ProgressBarListener, NewLyricScrollView.LyricOnClickListener, NewLyricScrollView.LyricProgressListener {
     private static final String SONG_PATH = "SONG_PATH";
 
     private MusicPlayProgressBar mMusicPlayProgressBar;
@@ -141,6 +141,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
         mTouchArea.setOnClickListener(this);
         mLyricScrollView.setOnClickListener(this);
         mLyricScrollView.setLyricOnClickListener(this);
+        mLyricScrollView.setLyricProgressListener(this);
         mMusicPlayProgressBar.setProgressBarListener(this);
         mPreferenceUtil = PreferenceUtil.getInstance(this);
         songIntent = new Intent();
@@ -171,7 +172,7 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
             thread1.start();
 
             mRotateAnimator = ValueAnimator.ofFloat(0, 360f);
-            mRotateAnimator.setDuration(60000);
+            mRotateAnimator.setDuration(50000);
             mRotateAnimator.setRepeatCount(-1);
             mRotateAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
@@ -318,6 +319,11 @@ public class MusicPlayActivity extends BaseActivity implements View.OnClickListe
     public void jumpPosToPlay(float pos) {
         mPlayService.setPosToPlay(pos);
         mUiHandler.post(mPlayProgressRunnable);
+    }
+
+    @Override
+    public void lyricJumpPosToPlay(int currentTime) {
+        mPlayService.setPosToPlay((float) currentTime / mPlayService.getPlayDuration());
     }
 
     @Override

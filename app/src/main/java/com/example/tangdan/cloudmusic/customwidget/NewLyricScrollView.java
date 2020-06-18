@@ -36,10 +36,12 @@ public class NewLyricScrollView extends View {
     private boolean isReachTop = true, isReachBottom;
     private boolean mAllowOffset = true;
     private LyricOnClickListener listener;
+    private LyricProgressListener lyricProgressListener;
     private ValueAnimator mRollbackAnimator;
     private ValueAnimator mShowDashAnimator;
     private int mIndexCache = 1;
     private int mOldTime;
+    private float downY = 0; //记录虚线按下位置
 
     private Scroller mScroller;
     private GestureDetector mGestureDetector;
@@ -125,7 +127,6 @@ public class NewLyricScrollView extends View {
         mShowDashAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
-                Log.d("TAGTAG","hidedashLine");
                 showDashLine = false;
                 invalidate();
             }
@@ -144,6 +145,7 @@ public class NewLyricScrollView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        Log.d("TAGTAG", "ondraw");
         if (!isLyricReady) {
             return;
         }
@@ -165,6 +167,10 @@ public class NewLyricScrollView extends View {
         this.listener = listener;
     }
 
+    public void setLyricProgressListener(LyricProgressListener listener) {
+        this.lyricProgressListener = listener;
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         mCenterX = 0.5f * w;
@@ -176,27 +182,30 @@ public class NewLyricScrollView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                downY = event.getY();
                 break;
             case MotionEvent.ACTION_MOVE:
                 mAllowOffset = false;
                 showDashLine = true;
-                Log.d("TAGTAG","showdashLine");
                 break;
             case MotionEvent.ACTION_UP:
                 mAllowOffset = true;
-                if (showDashLine) {
-                    createShowDashAnimator();
-                } else {
-                    cancelShowDashAnimator();
+
+                if (downY == event.getY() && Math.abs(lyricHeight / 2 - downY) < 60 && showDashLine) {
+                    showDashLine = false;
+                    int dashLineNum = (int) mOffsetY / 100;
+                    LyricObject temp = mLyricMap.get(dashLineNum);
+                    int time = temp.getBeginTime();
+                    mOffsetY = hlLineIndex * 100;
+                    lyricProgressListener.lyricJumpPosToPlay(time);
+                    cancelRollbackAnimator();
+                    Log.d("TAGTAG", "dashLineNum" + dashLineNum + "  time:" + time);
+                } else if (downY == event.getY()) {
+                    listener.performClick();
                 }
                 break;
         }
         return mGestureDetector.onTouchEvent(event);
-    }
-
-    public float getLyricSpeed() {
-        float speed = 1f;
-        return speed;
     }
 
     public void setOffsetY(float offsetY) {
@@ -231,6 +240,7 @@ public class NewLyricScrollView extends View {
             }
 
             for (int i = 0; i < (mIndexCache - index); i++) {//相减得到相差的offsetY
+                Log.d("TAGTAG", "mOffsetY 减 100");
                 setOffsetY(getOffsetY() - 100);
             }
 
@@ -243,6 +253,7 @@ public class NewLyricScrollView extends View {
             if (temp.getBeginTime() < currentTime) {
                 mOldTime = currentTime;
                 hlLineIndex = mIndexCache++;
+                Log.d("TAGTAG", "mOffsetY 加 100");
                 setOffsetY(getOffsetY() + 100);
             }
         }
@@ -272,15 +283,17 @@ public class NewLyricScrollView extends View {
                 mOffsetY = mScroller.getCurrY();
             }
 
-//            if (isScrolled) {
-//                isScrolled = false;
-//                createRollbackAnimator(mOffsetY, hlLineIndex * 100);
-//            } else {
-//                cancelRollbackAnimator();
-//            }
             postInvalidate();
         } else {
             mAllowOffset = true;
+
+            if (isScrolled) {
+                isScrolled = false;
+                createRollbackAnimator(mOffsetY, hlLineIndex * 100);
+                if (showDashLine) {
+                    createShowDashAnimator();
+                }
+            }
         }
     }
 
@@ -355,12 +368,6 @@ public class NewLyricScrollView extends View {
         }
 
         @Override
-        public boolean onSingleTapUp(MotionEvent e) {
-            listener.performClick();
-            return super.onSingleTapUp(e);
-        }
-
-        @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             mOffsetY += distanceY;
             if (mOffsetY < 0) {
@@ -382,8 +389,9 @@ public class NewLyricScrollView extends View {
             if (isScrolled) {
                 isScrolled = false;
                 createRollbackAnimator(mOffsetY, hlLineIndex * 100);
-            } else {
-                cancelRollbackAnimator();
+                if (showDashLine) {
+                    createShowDashAnimator();
+                }
             }
 
             invalidate();
@@ -393,13 +401,13 @@ public class NewLyricScrollView extends View {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            isFling = true;
+            isScrolled = true;
             if (Math.abs(e1.getY() - e2.getY()) > 400 && Math.abs(velocityY) > 4000) {
                 fullScrollYto(e1.getY() - e2.getY(), velocityY);
             } else {
                 smoothScrollYTo(e1.getY() - e2.getY(), velocityY);
             }
-            isFling = true;
-            isScrolled = true;
             return super.onFling(e1, e2, velocityX, velocityY);
         }
     };
@@ -408,6 +416,10 @@ public class NewLyricScrollView extends View {
         void performClick();
 
         void performLongClick();
+    }
+
+    public interface LyricProgressListener {
+        void lyricJumpPosToPlay(int currentTime);
     }
 
 //    @Override
